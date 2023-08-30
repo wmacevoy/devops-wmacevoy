@@ -1,0 +1,40 @@
+#!/bin/bash
+
+container_cmd() {
+  local cmd
+  if which podman > /dev/null
+  then
+    cmd=podman
+  else
+    cmd=docker
+  fi
+  
+  while [ $# -gt 0 ]
+  do
+    case "$1"
+    in
+	--podman)  cmd=podman;;
+	--docker)  cmd=docker;;
+    esac
+    shift
+  done
+  echo "$cmd"
+}
+
+container_cmd_self_test() {
+  test "$(container_cmd --podman)" = "podman" || (echo not podman && exit 1)
+  test "$(container_cmd --docker)" = "docker" || (echo not podman && exit 1)
+  test "$(container_cmd)" = "docker" -o "$(container_cmd)" = "podman" || (echo no default && exit 1)  
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	container_cmd_self_test "$@"
+    else
+	container_cmd "$@"
+    fi
+fi
+

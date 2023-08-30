@@ -1,0 +1,34 @@
+#!/bin/bash
+
+is_windows() {
+    if which cygpath > /dev/null # git-bash/msys/cygwin
+    then
+	return 0
+    fi
+    if [ -r /proc/version ] && grep -q Microsoft /proc/version
+    then
+	return 0
+    fi
+    return 1
+}
+
+is_windows_self_test() {
+  if is_windows
+  then
+    ( which cmd && which dir ) || (echo not windows && exit 1)
+  else
+    ( which uname && which sed ) || (echo not unix && exit 1)
+  fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	is_windows_self_test "$@"
+    else
+	is_windows "$@"
+    fi
+fi
+

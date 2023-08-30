@@ -1,0 +1,54 @@
+#!/bin/bash
+
+for inc in container_cmd container_tag container_args host_path is_selinux
+do
+    if [ "$(type -t $inc)" != "function" ]
+    then
+	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
+    fi
+done
+
+develop() {
+    local dir="$(ci dir)"
+    local host_dir="$(host_path "$dir")"
+    local cmd="$(container_cmd "$@")"
+    local tag="$(container_tag "$@")-local"
+    local args=($(container_args "$@"))
+
+    if ! $cmd build --tag "$tag" -f "$dir/Dockerfile.local" "$dir"
+    then
+	echo "local build failed"
+	exit 1
+    fi
+    
+    local optZ=""
+    if [ $cmd = podman ]
+    then
+	if is_selinux "$@"
+	then
+	    optZ=":Z"
+	fi
+    fi
+    
+    "$cmd" run -it --rm \
+	   -v "$host_dir:/usr/src/app$optZ" \
+	   -h ubuntu \
+	   "$tag" \
+	   "${args[@]}"
+}
+
+develop_self_test() {
+  local dir="$(ci dir)"
+  /bin/rm -rf "$dir/tmp/dev1" && mkdir -p "$dir/tmp/dev1" && cp -R "$dir"/{bin,ci} "$dir/tmp/dev1" && printf '%s\n' 'FROM alpine' 'RUN apk add bash' 'ENTRYPOINT ["/bin/bash","-i","-c","\"$@\"","--"]' > "$dir/tmp/dev1/Dockerfile.local" && cd "$dir/tmp/dev1" && bash -c ". ci; ci develop echo Hello" | grep "Hello" || (echo hello failed && exit 1)
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	develop_self_test "$@"
+    else
+	develop "$@"
+    fi
+fi

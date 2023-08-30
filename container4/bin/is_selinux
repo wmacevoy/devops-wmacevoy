@@ -1,0 +1,30 @@
+#!/bin/bash
+
+is_selinux() {
+    if which sestatus > /dev/null
+    then
+	if sestatus | grep -q enabled
+	then
+	    return 0
+	fi
+    fi
+    return 1
+}
+
+is_selinux_self_test() {
+    if is_selinux
+    then
+	which sestatus || (echo not selinux && ext 1)
+    fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	is_selinux_self_test "$@"
+    else
+	is_selinux "$@"
+    fi
+fi

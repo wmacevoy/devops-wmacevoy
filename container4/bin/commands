@@ -1,0 +1,25 @@
+#!/bin/bash
+
+commands() {
+    local scripts=($(find $(test $(uname) = Darwin && echo " " -E) "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)" -type f -regex '.*/[A-Za-z0-9]([-_]?[A-Za-z0-9])*' -exec egrep -q 'self'_'test' {} \; -print))
+    echo "${scripts[@]}"
+}
+
+commands_self_test() {
+    local my_commands=($(commands))
+    for command in container_cmd container_tag is_windows is_selinux
+    do
+	echo "${my_commands[@]}" | grep -q $command || (echo missing $command && exit 1)
+    done
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	commands_self_test "$@"
+    else
+	commands "$@"
+    fi
+fi

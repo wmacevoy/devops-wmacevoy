@@ -1,0 +1,2 @@
+test "$(basename "$SHELL")" = "bash" || ( echo "not bash" && exit 1 )
+eval 'ci() { local dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"; local cmd="$1"; shift; if [ "$cmd" = "dir" ] ; then echo "$dir" ; else "$dir/bin/$cmd" "$@"; fi }; export -f ci;'

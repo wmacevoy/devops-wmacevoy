@@ -1,0 +1,59 @@
+#!/bin/bash
+
+for inc in commands
+do
+    if [ "$(type -t $inc)" != "function" ]
+    then
+	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
+    fi
+done
+
+ci_test() {
+  local passed=()
+  local failed=()
+  for command in $(commands)
+  do
+    if $command --self-test
+    then
+       echo $command pass
+       passed+=($(basename "$command"))
+    else
+       echo $command fail
+       failed+=($(basename "$command"))       
+    fi
+  done
+  if [ ${#passed[@]} -gt 0 ]
+  then
+    echo "passed: ${passed[@]}"
+  fi
+  
+  if [ ${#failed[@]} -gt 0 ]
+  then
+    echo "failed: ${failed[@]}"
+  fi
+
+  if [ ${#failed[@]} -eq 0 ]
+  then
+    echo "all tests passed"
+    return 0
+  else
+    echo "some tests failed"
+    return 1
+  fi
+}
+
+ci_test_self_test() {
+  echo "no ci_test self test!"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	ci_test_self_test "$@"
+    else
+	ci_test "$@"
+    fi
+fi
+
