@@ -1,0 +1,38 @@
+version: '3'
+services:
+  # Node.js Server
+  api:
+    build: ./api
+    container_name: notes-api
+    volumes:
+      - ./api:/app
+    working_dir: /app
+    environment:
+      - API_PORT=3000
+      - STATIC_PORT=8000
+      - DB_HOST=notes-db
+      - DB_PORT=5432
+      - DB_USER=myuser
+      - DB_PASSWORD=mypassword
+      - DB_NAME=notesdb
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    depends_on:
+      - notes-db
+    command: npm start
+
+  # PostgreSQL Database
+  notes-db:
+    image: postgres:15
+    container_name: notes-db
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=notesdb
+    volumes:
+      - notes-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+volumes:
+  notes-data:
