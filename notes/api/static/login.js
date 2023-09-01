@@ -15,10 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ username, password }),
         });
         
-        if (response.status === 200) {
-            token = await response.json();
-            localStorage.setItem('token', token);
-            alert('Successfully logged in!');
+          if (response.status === 200) {
+	      const json = await response.json();
+              token = json.token;
+	      console.log(`token: ${JSON.stringify(token)}`);
+              localStorage.setItem('token', token);
+              alert('Successfully logged in!');
           // Navigate to another page or update UI
         } else {
           alert('Login failed!');

@@ -9,7 +9,7 @@ window.addEventListener('DOMContentLoaded', async (event) => {
         if (response.ok) {
             const notes = await response.json();
             const notesContainer = document.getElementById('notesContainer');
-            notesContainer.innerHTML = data.map(notes => `<p>${note.content}</p>`).join('');
+            notesContainer.innerHTML = notes.map(note => `<p>${note.content}</p>`).join('');
         }
     }
     catch (error) {

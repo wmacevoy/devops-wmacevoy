@@ -10,39 +10,55 @@ const initDB = async () => {
         database: process.env.DB_NAME
     });
     try {
-        // Create users table
+
         await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        username VARCHAR PRIMARY KEY,
-        password VARCHAR NOT NULL
-      );
+          CREATE TABLE IF NOT EXISTS roles (
+            id VARCHAR PRIMARY KEY
+          );
     `);
 
-        // Create notes table
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS users (
+            id VARCHAR PRIMARY KEY,
+            password VARCHAR NOT NULL
+          );
+    `);
+
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS user_roles (
+            user_id VARCHAR REFERENCES users(id),
+            role_id VARCHAR REFERENCES roles(id),
+            PRIMARY KEY (user_id, role_id)
+          );
+    `);
         await pool.query(`
       CREATE TABLE IF NOT EXISTS notes (
         id SERIAL PRIMARY KEY,
-        username VARCHAR REFERENCES users(username),
+        user_id VARCHAR REFERENCES users(id),
         content TEXT
       );
     `);
 
-        // Check if 'admin' already exists
-        const usersResult = await pool.query('SELECT * FROM users WHERE username = $1', ['admin']);
+	adminId='admin';
+	adminPassword='admin';
+	const usersResult = await pool.query('SELECT * FROM users WHERE id = $1', [adminId]);
         if (usersResult.rows.length === 0) {
-            // Add initial user 'admin'
-            const hashedPassword = await bcrypt.hash('admin', 10);
-            await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['admin', hashedPassword]);
-            console.log("'admin' user created with password 'admin'");
+            const hashedPassword = await bcrypt.hash(adminPassword, 10);
+            await pool.query('INSERT INTO users (id, password) VALUES ($1, $2)', [adminId, hashedPassword]);
+            console.log(`${adminId} user created with password ${adminPassword}`);
+	}
+
+	for (const role of ['user','admin']) {
+	    await pool.query('INSERT INTO roles (id) VALUES ($1) ON CONFLICT DO NOTHING', [role]);
+	    await pool.query('INSERT INTO user_roles (user_id,role_id) VALUES ($1,$2) ON CONFLICT DO NOTHING',[adminId,role]);
         }
 
-        const notesResult = await pool.query('SELECT * FROM notes WHERE username = $1', ['admin']);
+        const notesResult = await pool.query('SELECT * FROM notes WHERE user_id = $1', [adminId]);
         if (notesResult.rows.length === 0) {
             const content = 'hello'
-            await pool.query('INSERT INTO notes (username, content) VALUES ($1, $2)', ['admin', content]);
-            console.log(`admin user add note "${content}"`);
+            await pool.query('INSERT INTO notes (user_id, content) VALUES ($1, $2)', [adminId, content]);
+            console.log(`${adminId} add note "${content}"`);
         }
-
     } catch (err) {
         console.error(`Database initialization error: ${err.message}`);
     } finally {
