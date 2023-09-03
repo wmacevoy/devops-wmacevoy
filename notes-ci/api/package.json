@@ -5,7 +5,7 @@
     "scripts": {
         "start": "npm install && node index.js",
         "development": "npm install && nodemon index.js",
-	"test": "npm install && jest --watchAll"
+	"test": "npm install && jest --runInBand --watchAll --detectOpenHandles"
     },
     "dependencies": {
         "bcrypt": "^5.0.1",

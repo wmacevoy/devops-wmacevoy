@@ -6,6 +6,8 @@ const admin = { 'user_id' : 'alex', 'password' : '@bc!23' };
 const user = { 'user_id' : 'jordan', 'password' : 'abc123' };
 const nobody = { 'user_id' : 'murphy', 'password' : 'yes' };
 
+const quiet = true;
+
 const tokenFor = async (user) => {
     const payload = { 'user_id' : user.user_id, 'password' : user.password };
     const response = await request(app)
@@ -18,19 +20,18 @@ const tokenFor = async (user) => {
     return response.body.token;
 }
 
-beforeEach(async () => {
-    await db({'reset':true});
-});
-
-describe('post /api/v1/login', () => {
-    it('should return a token for admin', async () => {
-	tokenFor(admin);
+describe('login', () => {
+    it('works for admin', async () => {
+	await db({'reset':true, quiet });
+	await tokenFor(admin);
     });
-    it('should return a token for user', async () => {
-	tokenFor(user);
+    it('works for user', async () => {
+	await db({'reset':true, quiet });
+	await tokenFor(user);
     });
-
-    it('should not return a token for nobody', async () => {
+    it('fails for nobody',async () => {
+	await db({'reset':true, quiet });
+	await db({'reset':true, quiet });
 	const payload = { 'user_id' : nobody.user_id, 'password' : nobody.password };
 	const response = await request(app)
 	      .post(`/api/v1/login`)
@@ -39,10 +40,10 @@ describe('post /api/v1/login', () => {
     });
 });
 
-describe('post /api/v1/notes', () => {
-    it('should return notes for admin', async () => {
+describe('notes', () => {
+    it('works for admin', async () => {
+	await db({'reset':true, quiet });
 	const token = await tokenFor(admin);
-
 	const response = await request(app)
 	      .get(`/api/v1/notes`)
 	      .set('Authorization', `Bearer ${token}`)
@@ -52,5 +53,25 @@ describe('post /api/v1/notes', () => {
 
 	notes = response.body;
 	expect(notes[0].content).toBe('this is alex');
+    });
+    it('works for jordan', async () => {
+	await db({'reset':true, quiet });
+	const token = await tokenFor(user);
+	const response = await request(app)
+	      .get(`/api/v1/notes`)
+	      .set('Authorization', `Bearer ${token}`)
+	      .set('Accept', 'application/json')
+	      .expect('Content-Type', /json/)
+	      .expect(200);
+
+	notes = response.body;
+	expect(notes[0].content).toBe('this is jordan');
+    });
+    it('fails without authorization', async () => {
+	await db({'reset':true, quiet });
+	const response = await request(app)
+	      .get(`/api/v1/notes`)
+	      .set('Accept', 'application/json')
+	      .expect(403);
     });
 });
