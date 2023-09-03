@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
   
-      const username = document.getElementById('username').value;
+      const user_id = document.getElementById('user_id').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
   
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({ user_id, email, password }),
         });
         
         if (response.status === 201) {

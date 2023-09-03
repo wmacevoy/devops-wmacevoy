@@ -19,7 +19,7 @@ services:
       - "3000:3000"
     depends_on:
       - notes-db
-    command: npm start
+    command: npm run dev
 
   # PostgreSQL Database
   notes-db:

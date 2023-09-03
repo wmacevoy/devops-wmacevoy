@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
   
-      const username = document.getElementById('username').value;
+      const user_id = document.getElementById('user_id').value;
       const password = document.getElementById('password').value;
   
       try {
@@ -12,16 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ user_id, password }),
         });
         
           if (response.status === 200) {
 	      const json = await response.json();
               token = json.token;
-	      console.log(`token: ${JSON.stringify(token)}`);
               localStorage.setItem('token', token);
               alert('Successfully logged in!');
-          // Navigate to another page or update UI
         } else {
           alert('Login failed!');
         }
