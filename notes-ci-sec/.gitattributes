@@ -1,1 +1,1 @@
-private/** filter=git-crypt diff=git-crypt
+/api/private/** filter=git-crypt diff=git-crypt
