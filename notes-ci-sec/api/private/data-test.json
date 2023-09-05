@@ -1,0 +1,19 @@
+{
+    "roles" : ["admin","user"],
+    "users" : [
+	{ "id": "alex",
+	  "password": "b7d328c477ecf9835b589ce24ee010c798ebf657",
+	  "roles": ["admin", "user"],
+	  "notes": [{ "content": "this is alex" }] },
+	{ "id": "jordan",
+	  "password": "679aa50e67552e07dd8be1bf5b048ee1911da4b8",
+	  "roles": ["user"],
+	  "notes": [{ "content": "this is jordan" }]
+	},
+	{ "id": "nobody",
+	  "password": "null",
+	  "roles": [],
+	  "notes": [{ "content": "unavailable" }]
+	}
+    ]
+}
