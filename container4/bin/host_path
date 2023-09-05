@@ -1,35 +1,32 @@
 #!/bin/bash
 
 host_path() {
-    for path in "$@"
-    do
-	if which cygpath > /dev/null # git-bash/msys/cygwin
-	then
-	    path="$(cygpath -w "$path")"
-	elif [ -r /proc/version ] && grep -q Microsoft /proc/version
-	then
-	    path="$(readlink -m "$path" | sed 's|^/mnt/\([a-z]\)|\U\1:|' | sed 's|/|\\|g)')"
-	fi
-	echo "${path:Q}"
+    for path in "$@"; do
+        if which cygpath >/dev/null; then # git-bash/msys/cygwin
+            path="$(cygpath -w "$path")"
+        elif [ -r /proc/version ] && grep -q Microsoft /proc/version; then
+            path="$(readlink -m "$path" | sed 's|^/mnt/\([a-z]\)|\U\1:|' | sed 's|/|\\|g)')"
+        fi
+        echo "${path:Q}"
     done
 }
 
 host_path_self_test() {
-    local dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+    local dir="$(
+        cd "$(dirname "${BASH_SOURCE[0]}")"
+        pwd
+    )"
     /bin/rm -rf "$dir/tmp/my docker's file"
-    mkdir -p  "$dir/tmp"
-    echo "exists" > "$dir/tmp/my docker's file"
+    mkdir -p "$dir/tmp"
+    echo "exists" >"$dir/tmp/my docker's file"
     host_path "$dir/tmp/my docker's file" | grep "my docker's file" || (echo incorrect quotes && exit 1)
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
-    if [ "$1" == "--self-test" ]
-    then
-	shift
-	host_path_self_test "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    if [ "$1" == "--self-test" ]; then
+        shift
+        host_path_self_test "$@"
     else
-	host_path "$@"
+        host_path "$@"
     fi
 fi
-

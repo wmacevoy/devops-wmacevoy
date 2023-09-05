@@ -3,18 +3,18 @@
 container_args() {
   local arg
   local none=true
-  for arg in "$@"
-  do
-    case "$arg"
-    in
-      --self-test) ;;
-      --podman|--docker) ;;
-      --tag=*) ;;
-      *) echo "${arg:Q}" ; none=false ;;
+  for arg in "$@"; do
+    case "$arg" in
+    --self-test) ;;
+    --podman | --docker) ;;
+    --tag=*) ;;
+    *)
+      echo "${arg:Q}"
+      none=false
+      ;;
     esac
   done
-  if [ $none = true ]
-  then
+  if [ $none = true ]; then
     echo bash -c bash -i
   fi
 }
@@ -25,14 +25,11 @@ container_args_self_test() {
   test ${args[0]} = "ls" || (echo "wrong arg" && exit 1)
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
-    if [ "$1" == "--self-test" ]
-    then
-	shift
-	container_args_self_test "$@"
-    else
-	container_args "$@"
-    fi
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  if [ "$1" == "--self-test" ]; then
+    shift
+    container_args_self_test "$@"
+  else
+    container_args "$@"
+  fi
 fi
-

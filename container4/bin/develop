@@ -1,10 +1,11 @@
 #!/bin/bash
 
-for inc in container_cmd container_tag container_args host_path is_selinux
-do
-    if [ "$(type -t $inc)" != "function" ]
-    then
-	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
+for inc in commands container_cmd container_tag container_args host_path is_selinux; do
+    if [ "$(type -t $inc)" != "function" ]; then
+        . "$(
+            cd "$(dirname "${BASH_SOURCE[0]}")"
+            pwd
+        )"/$inc
     fi
 done
 
@@ -15,40 +16,56 @@ develop() {
     local tag="$(container_tag "$@")-local"
     local args=($(container_args "$@"))
 
-    if ! $cmd build --tag "$tag" -f "$dir/Dockerfile.local" "$dir"
+    if ! $cmd run hello-world | grep -i hello
     then
-	echo "local build failed"
-	exit 1
+        echo "`$cmd run hello-world` did not work.  Fix $cmd"
+        exit 1
     fi
-    
+
+    if ! $cmd build --tag "$tag" -f "$dir/Dockerfile.local" "$dir"; then
+        echo "local build failed"
+        exit 1
+    fi
+
     local optZ=""
-    if [ $cmd = podman ]
-    then
-	if is_selinux "$@"
-	then
-	    optZ=":Z"
-	fi
+    if [ $cmd = podman ]; then
+        if is_selinux "$@"; then
+            optZ=":Z"
+        fi
     fi
-    
+
     "$cmd" run -it --rm \
-	   -v "$host_dir:/usr/src/app$optZ" \
-	   -h ubuntu \
-	   "$tag" \
-	   "${args[@]}"
+        -v "$host_dir:/usr/src/app$optZ" \
+        -h ubuntu \
+        "$tag" \
+        "${args[@]}"
 }
 
+develop_self_test_docker() {
+    local dir="$(ci dir)"
+    local version="$1"
+
+    /bin/rm -rf "$dir/tmp/$version" || (echo rm failed && exit 1)
+    mkdir -p "$dir/tmp/$version" || (echo mkdir failed && exit 1)
+    (cd "$dir" && cp ci "$dir/tmp/$version/ci") || (echo cp ci failed && exit 1)
+    (mkdir -p "$dir/tmp/$version/bin" && cd "$dir/tmp/$version/bin" && cp $(commands "$@") "$dir/tmp/$version/bin" ) || (echo cp failed && exit 1)
+    cat - >"$dir/tmp/$version/Dockerfile.local" || (echo create Dockerfile.local failed && exit 1)
+}
 develop_self_test() {
-  local dir="$(ci dir)"
-  /bin/rm -rf "$dir/tmp/dev1" && mkdir -p "$dir/tmp/dev1" && cp -R "$dir"/{bin,ci} "$dir/tmp/dev1" && printf '%s\n' 'FROM alpine' 'RUN apk add bash' 'ENTRYPOINT ["/bin/bash","-i","-c","\"$@\"","--"]' > "$dir/tmp/dev1/Dockerfile.local" && cd "$dir/tmp/dev1" && bash -c ". ci; ci develop echo Hello" | grep "Hello" || (echo hello failed && exit 1)
+    local dir="$(ci dir)"
+    develop_self_test_docker hello <<HELLO
+FROM alpine
+RUN apk add bash
+ENTRYPOINT ["/bin/bash","-i","-c","\"\$@\"","--"]
+HELLO
+    ( . "$dir/tmp/hello/ci" ; ci develop "$@" echo Hello | grep "Hello" ) || (echo hello failed && exit 1)
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
-    if [ "$1" == "--self-test" ]
-    then
-	shift
-	develop_self_test "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    if [ "$1" == "--self-test" ]; then
+        shift
+        develop_self_test "$@"
     else
-	develop "$@"
+        develop "$@"
     fi
 fi

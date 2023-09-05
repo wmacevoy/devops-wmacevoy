@@ -55,8 +55,6 @@ const initDB = async () => {
 	}
     } catch (err) {
         console.error(`Database initialization error: ${err.message}`);
-    } finally {
-        pool.end();
     }
 };
 

@@ -1,11 +1,12 @@
 #!/bin/bash
 
-for inc in container_cmd
-do
-    if [ "$(type -t $inc)" != "function" ]
-    then
-	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
-    fi
+for inc in container_cmd; do
+  if [ "$(type -t $inc)" != "function" ]; then
+    . "$(
+      cd "$(dirname "${BASH_SOURCE[0]}")"
+      pwd
+    )"/$inc
+  fi
 done
 
 container_tag() {
@@ -13,11 +14,9 @@ container_tag() {
   local cmd="$(container_cmd "$@")"
   local tag="$cmd-$(basename $dir)"
 
-  while [ $# -gt 0 ]
-  do
-    case "$1"
-    in
-	--tag=*)  tag=${1#--tag=}
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    --tag=*) tag=${1#--tag=} ;;
     esac
     shift
   done
@@ -28,17 +27,14 @@ container_tag_self_test() {
   local dir="$(ci dir)"
   test "$(container_tag --podman)" = "podman-$(basename "$dir")" || (echo podman tag wrong && exit 1)
   test "$(container_tag --docker)" = "docker-$(basename "$dir")" || (echo docker tag wrong && exit 1)
-  test "$(container_tag --tag=my_tag)" = "my_tag" || (echo custom tag wrong && exit 1)  
+  test "$(container_tag --tag=my_tag)" = "my_tag" || (echo custom tag wrong && exit 1)
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
-    if [ "$1" == "--self-test" ]
-    then
-	shift
-	container_tag_self_test "$@"
-    else
-	container_tag "$@"
-    fi
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  if [ "$1" == "--self-test" ]; then
+    shift
+    container_tag_self_test "$@"
+  else
+    container_tag "$@"
+  fi
 fi
-
