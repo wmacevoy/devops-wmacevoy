@@ -7,7 +7,7 @@ anything like full functionality, just enough to illustrate the mechanics of suc
 To start, use (in this directory after starting docker)
 
 ```bash
-make all
+make up
 ```
 
 To shut down, use
@@ -32,8 +32,8 @@ The basic infrastructure is as follows:
 
 - The postgress database maintains these tables
 -- users (id, jwt_secret, hashed_password)
--- roles (id) with `admin` and `user`
+-- roles (id)
 -- user_roles (user_id,role_id)
 -- notes(user_id,content)
 
-the `api/config` has configuration and test data.  This is only loaded to the repo in an encrypted state using git-crypt
+the `api/private` directory has configuration data & keys.  It is only loaded to the repo in an encrypted state using git-crypt.
