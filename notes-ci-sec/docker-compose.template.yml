@@ -5,7 +5,7 @@ services:
     build: ./api
     container_name: notes-${NODE_ENV}-api
     env_file:
-      - ./private/${NODE_ENV}.env
+      - ./api/private/${NODE_ENV}.env
     volumes:
       - ./api:/app
     working_dir: /app
@@ -23,7 +23,7 @@ services:
     image: postgres:15
     container_name: notes-${NODE_ENV}-db
     env_file:
-      - ./private/${NODE_ENV}.env
+      - ./api/private/${NODE_ENV}.env
     volumes:
       - notes-${NODE_ENV}-data:/var/lib/postgresql/data
     ports:

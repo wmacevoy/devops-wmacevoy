@@ -18,15 +18,13 @@ const isAuthenticatedAs = async (role, req, res, next) => {
         const hasRole = (await req.pool.query('SELECT EXISTS(SELECT 1 FROM user_roles WHERE user_id=$1 AND role_id=$2)',
             [user_id, role])).rows[0].exists;
         if (hasRole) {
-            //       console.log('role ok');
             const jwt_secret = (await req.pool.query('SELECT jwt_secret FROM users WHERE id = $1',
                 [user_id])).rows[0].jwt_secret;
             req.user = await jwtVerify(token, jwt_secret);
             next();
             return;
         }
-    } catch (err) {
-        console.log(`auth error ${err.message}`);
+    } catch (error) {
     }
     res.sendStatus(403);
 };
@@ -74,7 +72,6 @@ module.exports = (app) => {
     // Login
     router.post('/login', async (req, res) => {
         const { user_id, password } = req.body;
-
         try {
             const user = (await req.pool.query('SELECT id, jwt_secret, hashed_password FROM users WHERE id = $1', [user_id])).rows[0];
             const passwordMatch = await bcrypt.compare(password, user.hashed_password);

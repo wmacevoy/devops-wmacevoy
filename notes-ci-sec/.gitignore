@@ -1,6 +1,3 @@
-*~
-\#*
 /docker-compose.development.yml
 /docker-compose.test.yml
-/api/package-lock.json
 

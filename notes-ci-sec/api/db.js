@@ -2,9 +2,8 @@ const { Pool } = require('pg');
 
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const fs = require('fs');
-const util = require('util');
-const readFile = util.promisify(fs.readFile);
+
+const { Data } = require('./data');
 
 const config = async (pool, options) => {
     const reset = options?.reset ?? false;
@@ -51,14 +50,13 @@ const config = async (pool, options) => {
       );
     `);
 
-	const dataFile=`./private/data-${process.env.NODE_ENV}.json`;
-	const data=JSON.parse(await readFile(dataFile, 'utf8'));
+	const data = new Data(options);
 
-	for (const role of data.roles) {
+	for (const role of await data.getRoles()) {
             await pool.query('INSERT INTO roles (id) VALUES ($1) ON CONFLICT DO NOTHING', [role]);
 	}
 
-        for (const user of data.users) {
+        for (const user of await data.getAllUsers()) {
             const jwt_secret = crypto.randomBytes(16).toString('hex');
             const hashedPassword = await bcrypt.hash(user.password, parseInt(process.env.BCRYPT_ROUNDS));
             await pool.query('INSERT INTO users (id, jwt_secret, hashed_password) VALUES ($1, $2, $3) ON CONFLICT(id) DO UPDATE SET jwt_secret = EXCLUDED.jwt_secret, hashed_password = EXCLUDED.hashed_password', [user.id, jwt_secret, hashedPassword]);
