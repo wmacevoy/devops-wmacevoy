@@ -5,13 +5,14 @@
     "scripts": {
         "start": "npm install && node index.js",
         "development": "npm install && nodemon index.js",
-	"test": "npm install && jest --runInBand --watchAll --detectOpenHandles"
+        "test": "npm install && jest --runInBand --watchAll --detectOpenHandles"
     },
     "dependencies": {
         "bcrypt": "^5.0.1",
         "body-parser": "^1.19.0",
         "express": "^4.17.1",
         "jsonwebtoken": "^8.5.1",
+        "pako": "^2.1.0",
         "pg": "^8.6.0"
     },
     "devDependencies": {

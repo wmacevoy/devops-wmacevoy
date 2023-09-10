@@ -21,7 +21,7 @@ const config = async (pool, options) => {
         }
 
         await pool.query(`
-          CREATE TABLE roles (
+          CREATE TABLE IF NOT EXISTS roles (
             id VARCHAR PRIMARY KEY
           );
     `);
@@ -53,7 +53,7 @@ const config = async (pool, options) => {
 	const data = new Data(options);
 
 	for (const role of await data.getRoles()) {
-            await pool.query('INSERT INTO roles (id) VALUES ($1) ON CONFLICT DO NOTHING', [role]);
+            await pool.query('INSERT INTO roles(id) VALUES ($1) ON CONFLICT DO NOTHING',[role]);
 	}
 
         for (const user of await data.getAllUsers()) {

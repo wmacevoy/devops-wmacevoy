@@ -21,7 +21,9 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
       ```
       gpg --full-gen-key
       ```
-      -- use defaults, your full name, and github email.
+      -- use defaults 
+      ---- for 2.4.3: (ECC sign & encrypt, Curve25519, forever), your full name, and github email.
+            ---- for 2.4.3: (ECC sign & encrypt, Curve25519, forever), your full name, and github email.
       -- PROTECT these (in $HOME/.gnupg) like you would .ssh keys!
       -- you should password protect them (you won't have to use the password that much)
 
