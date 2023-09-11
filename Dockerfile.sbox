@@ -1,0 +1,14 @@
+FROM debian:bullseye
+
+RUN apt update \
+  && DEBIAN_FRONTEND=noninteractive apt install -y \
+  git git-crypt gnupg openssl openssh-server \
+  && apt clean \
+  && /bin/rm -rf /var/lib/apt/lists/*
+
+VOLUME /root/.ssh
+VOLUME /root/.gnupg
+WORKDIR /repo
+VOLUME /repo
+
+CMD bash -i

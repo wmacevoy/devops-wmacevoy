@@ -3,13 +3,13 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
+const { User } = require('./user');
 const { Data } = require('./data');
 
 const config = async (pool, options) => {
     const reset = options?.reset ?? false;
     const quiet = options?.quiet ?? false;
     try {
-
         if (reset) {
             if (!quiet) {
                 console.log(`dropping tables`);
@@ -21,7 +21,7 @@ const config = async (pool, options) => {
         }
 
         await pool.query(`
-          CREATE TABLE roles (
+          CREATE TABLE IF NOT EXISTS roles (
             id VARCHAR PRIMARY KEY
           );
     `);
@@ -53,24 +53,19 @@ const config = async (pool, options) => {
 	const data = new Data(options);
 
 	for (const role of await data.getRoles()) {
-            await pool.query('INSERT INTO roles (id) VALUES ($1) ON CONFLICT DO NOTHING', [role]);
+            await pool.query('INSERT INTO roles(id) VALUES ($1) ON CONFLICT DO NOTHING',[role]);
 	}
 
-        for (const user of await data.getAllUsers()) {
-            const jwt_secret = crypto.randomBytes(16).toString('hex');
-            const hashedPassword = await bcrypt.hash(user.password, parseInt(process.env.BCRYPT_ROUNDS));
-            await pool.query('INSERT INTO users (id, jwt_secret, hashed_password) VALUES ($1, $2, $3) ON CONFLICT(id) DO UPDATE SET jwt_secret = EXCLUDED.jwt_secret, hashed_password = EXCLUDED.hashed_password', [user.id, jwt_secret, hashedPassword]);
-            await pool.query('DELETE FROM user_roles WHERE user_id = $1', [user.id]);
-            for (const role of user.roles) {
-                await pool.query('INSERT INTO user_roles (user_id,role_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [user.id, role]);
-            }
-	    if (!(await pool.query('SELECT COUNT(*) FROM notes WHERE user_id = $1',[user.id])).rows[0].count < user.notes.length) {
-		for (const note of user.notes) {
-                    await pool.query('INSERT INTO notes (user_id, content) VALUES ($1, $2)', [user.id, note.content]);
+        for (const userData of await data.getAllUsers()) {
+	    const user = new User(userData);
+	    await user.save(pool);
+	    if (!(await pool.query('SELECT COUNT(*) FROM notes WHERE user_id = $1',[userData.id])).rows[0].count < userData.notes.length) {
+		for (const note of userData.notes) {
+                    await pool.query('INSERT INTO notes (user_id, content) VALUES ($1, $2)', [userData.id, note.content]);
 		}
 	    }
 	    if (!quiet) {
-                console.log(`${user.id} user created with password **** with roles ${JSON.stringify(user.roles)}`);
+                console.log(`${userData.id} user created with password **** with roles ${JSON.stringify(userData.roles)}`);
             }
         }
     } catch (err) {
