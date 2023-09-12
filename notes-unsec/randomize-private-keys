@@ -1,0 +1,16 @@
+#!/bin/bash
+
+randomize_in_place() {
+  for file in "$@"
+  do
+    /bin/rm -rf "$file.tmp"
+    cp "$file" "$file.tmp"
+    ./randomize "$file.tmp" > "$file"
+    rm "$file.tmp"
+  done
+}
+
+export -f randomize_in_place
+
+find api/private -type f \( -name '*.env' -o -name '*.json' \) \
+     -exec bash -c 'randomize_in_place "$0"' {} \;

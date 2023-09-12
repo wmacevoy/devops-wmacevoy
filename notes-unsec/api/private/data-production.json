@@ -1,0 +1,9 @@
+{
+    "roles" : ["admin","user"],
+    "users" : [
+	{ "id": "admin",
+	  "password": "c74f13e7e4fc2dbf3e90fc9d1b217e44617885d6",
+	  "roles": ["admin", "user"],
+	  "notes": [{"content":"note"}] }
+    ]
+}
