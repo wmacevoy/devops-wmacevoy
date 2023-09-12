@@ -4,7 +4,7 @@ const { Data } = require('./data');
 
 const config = async (pool, options) => {
     const reset = options?.reset ?? false;
-    const quiet = options?.quiet ?? false;
+    const quiet = options?.quiet ?? true;
     try {
         if (reset) {
             if (!quiet) {
@@ -16,6 +16,7 @@ const config = async (pool, options) => {
             await pool.query(`DROP TABLE IF EXISTS roles`);
         }
 
+			
         await pool.query(`
           CREATE TABLE IF NOT EXISTS roles (
             id VARCHAR PRIMARY KEY
@@ -54,18 +55,17 @@ const config = async (pool, options) => {
 
         for (const userData of await data.getAllUsers()) {
 	    const user = new User(userData);
-	    await user.save(pool);
-	    if (!(await pool.query('SELECT COUNT(*) FROM notes WHERE user_id = $1',[userData.id])).rows[0].count < userData.notes.length) {
+	    if (!await user.load(pool)) {
+		await user.save(pool);
 		for (const note of userData.notes) {
-                    await pool.query('INSERT INTO notes (user_id, content) VALUES ($1, $2)', [userData.id, note.content]);
+		    if ((await pool.query('SELECT id FROM notes WHERE user_id = $1 AND content = $2',[userData.id,note.content])).rows.length == 0) {
+			await pool.query('INSERT INTO notes (user_id, content) VALUES ($1, $2)', [userData.id, note.content]);
+		    }
 		}
 	    }
-	    if (!quiet) {
-                console.log(`${userData.id} user created with password **** with roles ${JSON.stringify(userData.roles)}`);
-            }
         }
-    } catch (err) {
-        console.error(`Database initialization error: ${err.message}`);
+    } catch (error) {
+        console.error(`Database initialization error: ${error.message}`);
     }
 };
 

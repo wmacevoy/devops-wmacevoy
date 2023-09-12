@@ -2,14 +2,17 @@ const request = require('supertest');
 const { db } = require('./db');
 const { app, start } = require('./app');
 const { Data } = require('./data');
+const { User } = require('./user');
 
 const data = new Data();
 
 const quiet = true;
 
 const tokenFor = async (user) => {
-	const payload = { 'user_id': user.id, 'password': user.password };
-	const response = await request(app)
+    const payload = { 'id': user.id || await user.getId(),
+		      'password': user.password || await user.getPassword() };
+    
+    const response = await request(app)
 		.post(`/api/v1/login`)
 		.send(payload)
 		.set('Accept', 'application/json')
@@ -38,7 +41,7 @@ describe('login', () => {
     });
     if ('fails for bad passwords',async () => {
 	for (const user of await data.getAllUsers()) {
-	    const payload = { 'user_id': user.id, 'password': `not ${user.password}` };
+	    const payload = { 'id': user.id, 'password': `not ${user.password}` };
 	    const response = await request(app)
 		  .post(`/api/v1/login`)
 		  .send(payload)
@@ -93,5 +96,59 @@ describe('notes', () => {
 		  .set('Accept', 'application/json')
 		  .expect(403);
 	}
+    });
+});
+
+describe('register', () => {
+    beforeEach(async () => await db({ 'reset': true, quiet }));    
+    it('works for admins', async () => {
+	const pool = await db();
+	const adminData = (await data.getAdmins())[0];
+	const admin = new User(adminData);
+	expect (await admin.load(pool)).toBe(true);
+	const adminToken = await tokenFor(adminData);
+
+	const userData = { 'id': 'registered-user','password': 'xdfrtyrtgbcfgtynot' };
+	
+	const response = await request(app)
+	      .post(`/api/v1/register`)
+	      .set('Authorization', `Bearer ${adminToken}`)
+	      .set('Accept', 'application/json')
+	      .send({'id':userData.id,'password':userData.password})
+	      .expect('Content-Type', /json/)
+	      .expect(200);
+
+	expect(response.body).toHaveProperty('message');
+	expect(response.body.message).toBe('saved');
+
+	const userToken = await tokenFor(userData);
+	const user = new User({'jwtToken':userToken});
+	expect(await user.load(pool)).toBe(true);
+	expect(await user.hasRole('user')).toBe(true);
+	expect(await user.hasRole('admin')).toBe(false);
+    });
+});
+
+describe('reset', () => {
+    beforeEach(async () => await db({ 'reset': true, quiet }));    
+    it('works for admins', async () => {
+	const pool = await db();
+	const adminData = (await data.getAdmins())[0];
+	const admin = new User(adminData);
+	const adminToken = await tokenFor(adminData);
+
+	const user = new User({'id':'new-id','password':'new-password'});
+	await user.save(pool);
+	expect (await user.load(pool)).toBe(true);
+
+	const response = await request(app)
+	      .post(`/api/v1/reset`)
+	      .set('Authorization', `Bearer ${adminToken}`)
+	      .set('Accept', 'application/json')
+	      .send({'sure':"I am sure!"})
+	      .expect('Content-Type', /json/)
+	      .expect(200);
+
+	expect (await user.load(pool)).toBe(false);	
     });
 });

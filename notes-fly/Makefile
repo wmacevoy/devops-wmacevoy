@@ -1,4 +1,6 @@
 SHELL=/bin/bash
+FLYCTL=$(shell which flyctl || echo '$HOME/.fly/bin/flyctl')
+
 api/Dockerfile.development : api/Dockerfile.template api/private/development.env
 	while read -r line; do export "$${line:Q}"; done < api/private/development.env \
 		&& envsubst < "$<" > "$@"
@@ -64,3 +66,10 @@ up:
 
 .PHONY: all
 all : up
+
+.PHONY: fly-secrets
+fly-secrets:
+	( cd api && $(FLYCTL) secrets set $$(cat private/production.env ) )
+
+production-deploy : fly-secrets
+	( cd api && $(FLYCTL) deploy )

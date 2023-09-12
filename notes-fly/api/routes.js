@@ -1,5 +1,6 @@
 const express = require('express');
 const { User } = require('./user');
+const { db } = require('./db');
 
 const isAuthenticatedAs = async (role, req, res, next) => {
     try {
@@ -33,22 +34,39 @@ const isUser = async (req, res, next) => {
 module.exports = (app) => {
     const router = express.Router();
 
+    router.post('/reset', isAdmin, async (req, res) => {
+	try {
+	    const { sure } = req.body;
+	    const quiet = true;
+	    const reset = true;
+
+	    let message = "unsure";
+	    if (sure === "I am sure!") {
+		await db({ reset , quiet });
+		message = 'reset';
+	    }
+	    res.status(200).send({message});
+
+	} catch (error) {
+	    console.log(error.message);
+	    res.status(500).send(error.message);
+	}
+    });
+
     router.post('/register', isAdmin, async (req, res) => {
 	try {
-            const { user_id, password } = req.body;
-	    const register = new User({'id':user_id});
-	    let status = 'unknown';
-	    if (await register.load(pool)) {
-		status = 'exists';
+            const { id, password } = req.body;
+	    const register = new User({ id });
+	    let message = 'unknown';
+	    if (await register.load(req.pool)) {
+		message = 'exists';
 	    } else {
 		await register.setPassword(password);
 		await register.setRoles(['user']);
-		if (await register.save(pool)) {
-		    status = 'saved';
-		}
-		
+		await register.save(req.pool);
+		message = 'saved';
 	    }
-	    res.status(200).send({status});
+	    res.status(200).send({message});
 	} catch (error) {
 	    console.log(error.message);
 	    res.status(500).send(error.message);
@@ -68,8 +86,8 @@ module.exports = (app) => {
     // Login
     router.post('/login', async (req, res) => {
 	try {
-            const { user_id, password } = req.body;
-	    const user = new User({'id':user_id});
+            const { id, password } = req.body;
+	    const user = new User({ id });
 	    if ((await user.load(req.pool)) && user.checkPassword(password)) {
 		const token = await user.getJwtToken();
 		res.status(200).send({token});
