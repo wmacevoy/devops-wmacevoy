@@ -67,8 +67,8 @@ up:
 .PHONY: all
 all : up
 
-.PHONY: 
-docker ps --filter name=notes-development-db --format "{{.ID}}"
+#.PHONY: 
+#docker ps --filter name=notes-development-db --format "{{.ID}}"
 
 .PHONY: secrets-fly
 secrets-fly:
@@ -76,3 +76,4 @@ secrets-fly:
 
 production-deploy-fly : secrets-fly
 	( cd api && $(FLYCTL) deploy )
+
