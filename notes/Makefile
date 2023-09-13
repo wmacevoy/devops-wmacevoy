@@ -67,9 +67,12 @@ up:
 .PHONY: all
 all : up
 
-.PHONY: fly-secrets
-fly-secrets:
+.PHONY: 
+docker ps --filter name=notes-development-db --format "{{.ID}}"
+
+.PHONY: secrets-fly
+secrets-fly:
 	( cd api && $(FLYCTL) secrets set $$(cat private/production.env ) )
 
-production-deploy : fly-secrets
+production-deploy-fly : secrets-fly
 	( cd api && $(FLYCTL) deploy )
