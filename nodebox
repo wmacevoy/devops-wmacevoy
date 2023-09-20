@@ -1,5 +1,5 @@
 #!/bin/bash
-if ! docker build -t sbox -f Dockerfile.nodebox .
+if ! docker build -t nodebox -f Dockerfile.nodebox .
 then
    echo "Build failed."
    exit 1
