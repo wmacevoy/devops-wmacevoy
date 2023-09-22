@@ -6,26 +6,10 @@ RUN apt update \
   && apt clean \
   && /bin/rm -rf /var/lib/apt/lists/*
 
-ARG USER=user
-ARG UID=1001
-ARG GID=1001
+USER node
 
-# Set environment variables
-ENV USER                ${USER}
-ENV HOME                /home/${USER}
-
-# Create user and setup permissions on /etc/sudoers
-RUN useradd -m -s /bin/bash -N -u $UID $USER && \
-    echo "${USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers && \
-    chmod 0440 /etc/sudoers && \
-    chmod g+w /etc/passwd 
-
-VOLUME ${HOME}/.ssh
-VOLUME ${HOME}/.gnupg
-WORKDIR /repo
 VOLUME /repo
-
-USER user
+WORKDIR /repo
 
 CMD bash -i
 
