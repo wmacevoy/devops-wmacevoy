@@ -5,4 +5,4 @@ then
    exit 1
 fi
 
-docker run -v "$HOME/.gitconfig:/home/node/.gitconfig" -v "$HOME/.ssh:/home/node/.ssh" -v "$HOME/.gnupg:/home/node/.gnupg" -v "$(pwd):/repo" --rm -it nodebox bash -i
+docker run -v "$HOME/.gitconfig:/home/node/.gitconfig" -v "$HOME/.ssh:/home/node/.ssh" -v "$HOME/.gnupg:/home/node/.gnupg" -v "$(pwd):/repo" -p 3000:3000 --rm -it nodebox bash -i
