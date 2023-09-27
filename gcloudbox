@@ -1,0 +1,45 @@
+#!/bin/bash
+
+built() {
+    docker image ls --format '{{.Repository}}' | grep -q "$1"
+}
+build_timestamp() {
+    date -d "$(docker inspect --format '{{.Created}}' "$1")" +%s
+}
+
+modification_timestamp() {
+    date -d "$(stat -f %m "$1")" +%s
+}
+
+extension="$(basename "${BASH_SOURCE[0]}")"
+tag=$(basename "${BASH_SOURCE[0]}" | tr '[:upper:]' '[:lower:]')
+tag="${tag// /_}"
+
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
+build=true
+if built "$tag"
+then
+    build_ts=$(build_timestamp "$tag")
+    if [ $(modification_timestamp "${BASH_SOURCE[0]}") -gt $build_ts ]
+    then
+	build=true
+    fi
+    if [ $(modification_timestamp "$dockerfile") -gt $build_ts ]
+    then
+	build=true
+    fi
+
+fi
+
+if [ $build = true ]
+then
+    if ! docker build -t "$tag" -f "$dockerfile" "$dir"
+    then
+	echo "Build failed."
+	exit 1
+    fi
+fi
+
+CONTAINER_USER=cloudsdk
+docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:/home/$CONTAINER_USER/.gitconfig:rw" -v "$HOME/.ssh:/home/$CONTAINER_USER/.ssh:rw" -v "$HOME/.gnupg:/home/$CONTAINER_USER/.gnupg:rw" -v "$(pwd):/repo" --rm -it gcloudbox bash -i
