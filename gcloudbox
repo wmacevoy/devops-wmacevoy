@@ -1,14 +1,18 @@
 #!/bin/bash
 
 built() {
-    docker image ls --format '{{.Repository}}' | grep -q "$1"
+    docker image ls --format '{{.ID}}:{{.Repository}}' | grep ":$1" | cut -d: -f1
 }
-build_timestamp() {
-    date -d "$(docker inspect --format '{{.Created}}' "$1")" +%s
+
+built_timestamp() {
+    id="$1"
+    iso=$(docker inspect --format '{{.Created}}' "$id")
+    trunc=$(echo $iso | cut -d. -f1)
+    date -j -f "%Y-%m-%dT%H:%M:%S" "$trunc" "+%s"
 }
 
 modification_timestamp() {
-    date -d "$(stat -f %m "$1")" +%s
+    stat -f "%m" "$1"
 }
 
 extension="$(basename "${BASH_SOURCE[0]}")"
@@ -17,19 +21,21 @@ tag="${tag// /_}"
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
-build=true
-if built "$tag"
+build=false
+id="$(built "$tag")"
+if [ $? != 0 ]
 then
-    build_ts=$(build_timestamp "$tag")
-    if [ $(modification_timestamp "${BASH_SOURCE[0]}") -gt $build_ts ]
+    build=true
+else
+    built_ts=$(built_timestamp "$id")
+    if [ $(modification_timestamp "${BASH_SOURCE[0]}") -gt $built_ts ]
     then
 	build=true
     fi
-    if [ $(modification_timestamp "$dockerfile") -gt $build_ts ]
+    if [ $(modification_timestamp "$dockerfile") -gt $built_ts ]
     then
 	build=true
     fi
-
 fi
 
 if [ $build = true ]
@@ -42,4 +48,4 @@ then
 fi
 
 CONTAINER_USER=cloudsdk
-docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:/home/$CONTAINER_USER/.gitconfig:rw" -v "$HOME/.ssh:/home/$CONTAINER_USER/.ssh:rw" -v "$HOME/.gnupg:/home/$CONTAINER_USER/.gnupg:rw" -v "$(pwd):/repo" --rm -it gcloudbox bash -i
+docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:/home/$CONTAINER_USER/.gitconfig:rw" -v "$HOME/.ssh:/home/$CONTAINER_USER/.ssh:rw" -v "$HOME/.gnupg:/home/$CONTAINER_USER/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" bash -i
