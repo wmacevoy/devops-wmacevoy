@@ -29,4 +29,6 @@ then
 fi
 
 CONTAINER_USER=cloudsdk
-docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:/home/$CONTAINER_USER/.gitconfig:rw" -v "$HOME/.ssh:/home/$CONTAINER_USER/.ssh:rw" -v "$HOME/.gnupg:/home/$CONTAINER_USER/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" bash -i
+CONTAINER_HOME=/home/$CONTAINER_USER
+
+docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" bash -i
