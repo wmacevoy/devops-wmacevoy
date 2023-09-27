@@ -1,0 +1,17 @@
+FROM node:18
+
+RUN apt update \
+  && DEBIAN_FRONTEND=noninteractive apt install -y \
+  curl ca-certificates curl git git-crypt gnupg openssl openssh-server python3 sudo \
+  && apt clean \
+  && /bin/rm -rf /var/lib/apt/lists/*
+
+WORKDIR /repo
+
+USER node
+
+RUN curl -L https://fly.io/install.sh | sh
+RUN echo export PATH='"'/home/node/.fly/bin:'${PATH}''"' >> /home/node/.bashrc
+
+CMD bash -i
+
