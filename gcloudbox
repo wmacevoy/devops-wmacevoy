@@ -21,30 +21,11 @@ tag="${tag// /_}"
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
-build=false
-id="$(built "$tag")"
-if [ $? != 0 ]
-then
-    build=true
-else
-    built_ts=$(built_timestamp "$id")
-    if [ $(modification_timestamp "${BASH_SOURCE[0]}") -gt $built_ts ]
-    then
-	build=true
-    fi
-    if [ $(modification_timestamp "$dockerfile") -gt $built_ts ]
-    then
-	build=true
-    fi
-fi
 
-if [ $build = true ]
+if ! docker build -t "$tag" -f "$dockerfile" "$dir"
 then
-    if ! docker build -t "$tag" -f "$dockerfile" "$dir"
-    then
-	echo "Build failed."
-	exit 1
-    fi
+    echo "Build failed."
+    exit 1
 fi
 
 CONTAINER_USER=cloudsdk
