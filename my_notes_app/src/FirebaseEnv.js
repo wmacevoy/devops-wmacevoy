@@ -1,8 +1,3 @@
-const fs = require('fs');
-const util = require('util');
-const dotenv = require('dotenv');
-const readFile = util.promisify(fs.readFile);
-
 class FirebaseEnv {
     constructor() {
 	this._config = null;

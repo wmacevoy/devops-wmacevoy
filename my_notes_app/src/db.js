@@ -31,5 +31,5 @@ const db = async (options) => {
     }
     return firestore;
 }
+export default db;
 
-module.exports = { db };

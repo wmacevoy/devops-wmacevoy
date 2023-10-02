@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import db from './db';
+const { db, auth } = require('./db');
 
 const Login = () => {
   const [email, setEmail] = useState('');
