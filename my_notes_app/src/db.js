@@ -19,7 +19,7 @@ const config = async (firestore,options) => {
     await setDoc(heartbeat,{ timestamp });
 }
 
-const db = async (options) => {
+export const db = async (options) => {
     if (firestore === null) {
 	const firebaseEnv = new FirebaseEnv(options);
 	const firebaseConfig = await firebaseEnv.getConfig();
@@ -32,4 +32,3 @@ const db = async (options) => {
     return firestore;
 }
 export default db;
-
