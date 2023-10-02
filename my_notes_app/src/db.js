@@ -1,36 +1,35 @@
-const firebase = require("firebase/app");
-const auth = require("firebase/auth");
-require("firebase/firestore");
+import { firebases, initializeApp } from 'firebase/app';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import 'firebase/auth';
+import { collection, doc, setDoc, getFirestore, serverTimestamp } from "firebase/firestore";
+import { FirebaseEnv } from './FirebaseEnv';
 
-const { FirebaseConfig } = require('./FirebaseConfig');
+let app = null;
+let firestore = null;
 
-let _db = null;
-
-const config = async (db,options) => {
+const config = async (firestore,options) => {
+    if (options !== undefined && options.user !== undefined) {
+	const user = options.user;
+	await signInWithEmailAndPassword ( getAuth(), user.email, user.password );
+    }
     const id = `${process.env.APP}_${process.pid}`;
-    const docRef = db.collection('heartbeats').doc(id);
-    docRef.set({
-	timestamp: _firestore.FieldValue.serverTimestamp()
-    }, { merge: true })
-	.then(() => {
-	    console.log(`heartbeat ${id} set`);
-	})
-	.catch((error) => {
-	    console.error(`error settng heartbeat ${id}: `, error);
-	});
+    const timestamp = serverTimestamp();
+    const heartbeats = collection(firestore,'heartbeats');
+    const heartbeat = doc(heartbeats,id);
+    await setDoc(heartbeat,{ timestamp });
 }
 
 const db = async (options) => {
-    if (_db == null) {
-	const firebaseConfig = new FirebaseConfig(options);
-	const config = await firebaseConfig.getConfig();
-	firebase.initializeApp(config);
-	_db = firebase.firestore;
+    if (firestore === null) {
+	const firebaseEnv = new FirebaseEnv(options);
+	const firebaseConfig = await firebaseEnv.getConfig();
+	app = initializeApp(firebaseConfig);
+	firestore = getFirestore(app);
         await config(firestore, options);
     } else if (options !== undefined) {
-        await config(_db, options);
+        await config(firestore, options);
     }
-    return _db;
+    return firestore;
 }
 
 module.exports = { db };
