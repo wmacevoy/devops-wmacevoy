@@ -1,12 +1,12 @@
 SHELL=/bin/bash
 FLYCTL=$(shell which flyctl || echo '$HOME/.fly/bin/flyctl')
 
-Dockerfile.development : Dockerfile.template src/private/development.env
-	while read -r line; do export "$${line:Q}"; done < src/private/development.env \
+Dockerfile.development : Dockerfile.template .env.development
+	while read -r line; do export "$${line:Q}"; done < .env.development
 		&& envsubst < "$<" > "$@"
 
-docker-compose.development.yml : docker-compose.template.yml src/private/development.env
-	while read -r line; do export "$${line:Q}"; done < src/private/development.env \
+docker-compose.development.yml : docker-compose.template.yml .env.development
+	while read -r line; do export "$${line:Q}"; done < .env.development
 		&& envsubst < "$<" > "$@"
 
 .PHONY: development-up
@@ -23,12 +23,12 @@ development-down : docker-compose.development.yml
 development-down-volumes : docker-compose.development.yml
 	docker-compose --file docker-compose.development.yml down --volumes
 
-Dockerfile.test : Dockerfile.template src/private/test.env
-	while read -r line; do export "$${line:Q}"; done < src/private/test.env \
+Dockerfile.test : Dockerfile.template .env.test
+	while read -r line; do export "$${line:Q}"; done < .env.test
 		&& envsubst < "$<" > "$@"
 
-docker-compose.test.yml : docker-compose.template.yml src/private/test.env
-	while read -r line; do export "$${line:Q}"; done < src/private/test.env \
+docker-compose.test.yml : docker-compose.template.yml .env.test
+	while read -r line; do export "$${line:Q}"; done < .env.test \
 		&& envsubst < "$<" > "$@"
 
 .PHONY: test-up
@@ -69,7 +69,7 @@ all : up
 
 .PHONY: secrets-fly
 secrets-fly:
-	( cd api && $(FLYCTL) secrets set $$(cat private/production.env ) )
+	( cd api && $(FLYCTL) secrets set $$(cat .env.production ) )
 
 production-launch-fly : secrets-fly
 	( cd api && $(FLYCTL) launch )
