@@ -5,5 +5,5 @@ then
    exit 1
 fi
 
-docker run -v "$HOME/.gitconfig:/home/user/.gitconfig" -v "$HOME/.ssh:/home/user/.ssh" -v "$HOME/.gnupg:/home/user/.gnupg" -v "$(pwd):/repo" --rm -it sbox bash -i
-
+CONTAINER_USER=cloudsdk
+docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:/home/$CONTAINER_USER/.gitconfig:rw" -v "$HOME/.ssh:/home/$CONTAINER_USER/.ssh:rw" -v "$HOME/.gnupg:/home/$CONTAINER_USER/.gnupg:rw" -v "$(pwd):/repo" --rm -it sbox bash -i

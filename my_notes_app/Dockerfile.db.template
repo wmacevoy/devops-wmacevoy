@@ -1,0 +1,31 @@
+# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/tags
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:427.0.0
+
+RUN apt update \
+  && DEBIAN_FRONTEND=noninteractive apt install -y \
+  curl git curl ca-certificates git-crypt gnupg openssl openssh-server python3 sudo \
+  && apt clean \
+  && /bin/rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+
+RUN apt update \
+  && DEBIAN_FRONTEND=noninteractive apt install -y \
+  nodejs \
+  && apt clean \
+  && /bin/rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g firebase-tools
+
+WORKDIR /repo
+
+USER cloudsdk
+
+RUN curl -L https://fly.io/install.sh | sh
+RUN echo export PATH='"'/home/cloudsdk/.fly/bin:'${PATH}''"' >> /home/cloudsdk/.bashrc
+
+# CMD firebase emulators:start --import /var/lib/firebase/data --export-on-exit /var/lib/firebase/data
+CMD bash -c "while true ; do date ; sleep 30 ; done"
+

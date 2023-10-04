@@ -2,6 +2,8 @@
 
 /Dockerfile.test
 /Dockerfile.development
+/Dockerfile.db.test
+/Dockerfile.db.development
 /docker-compose.test.yml
 /docker-compose.development.yml
 

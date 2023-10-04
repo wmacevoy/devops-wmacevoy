@@ -1,9 +1,4 @@
-const fs = require('fs');
-const util = require('util');
-const dotenv = require('dotenv');
-const readFile = util.promisify(fs.readFile);
-
-class FirebaseEnv {
+export class FirebaseEnv {
     constructor() {
 	this._config = null;
     }
@@ -30,4 +25,4 @@ class FirebaseEnv {
     }
 }
 
-module.exports = { FirebaseEnv };
+export default FirebaseEnv;
