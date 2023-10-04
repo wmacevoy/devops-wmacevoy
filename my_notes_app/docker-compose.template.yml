@@ -8,14 +8,11 @@ services:
     container_name: ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}
     env_file:
       - ./.env.${REACT_APP_NODE_ENV}
-    environment:
-      - PGPORT=${REACT_APP_PGPORT}
-      - API_PORT=${REACT_APP_API_PORT}      
     volumes:
       - .:/app
     working_dir: /app
     ports:
-      - "${REACT_APP_API_PORT}:${REACT_APP_API_PORT}"
+      - "${REACT_APP_API_PORT}:3000"
     networks:
       - ${REACT_APP_NAME}_${REACT_APP_NODE_ENV}_network
 
@@ -33,7 +30,9 @@ services:
     env_file:
       - ./.env.${REACT_APP_NODE_ENV}
     volumes:
+      - .:/app
       - ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-data:/var/lib/firebase/data
+    working_dir: /app
     ports:
       - "${REACT_APP_FIREBASE_PORT}:5000"
     networks:
