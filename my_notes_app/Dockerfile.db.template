@@ -26,6 +26,6 @@ USER cloudsdk
 RUN curl -L https://fly.io/install.sh | sh
 RUN echo export PATH='"'/home/cloudsdk/.fly/bin:'${PATH}''"' >> /home/cloudsdk/.bashrc
 
-CMD firebase emulators:start --import /var/lib/firebase/data --export-on-exit /var/lib/firebase/data
+CMD firebase emulators:start --project ${REACT_APP_FIREBASE_PROJECT_ID} --config firebase.json.${REACT_APP_NODE_ENV} --import /var/lib/firebase/data --export-on-exit /var/lib/firebase/data
 # CMD bash -c "while true ; do date ; sleep 30 ; done"
 

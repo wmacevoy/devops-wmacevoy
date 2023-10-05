@@ -1,21 +1,19 @@
 SHELL=/bin/bash
 FLYCTL=$(shell which flyctl || echo '$HOME/.fly/bin/flyctl')
 
-Dockerfile.development : Dockerfile.template .env.development
+# make .development files by processing .template files with .env.development substitutions
+%.development : %.template .env.development
 	while read -r line; do export "$${line:Q}"; done < .env.development \
 		&& envsubst < "$<" > "$@"
 
-Dockerfile.db.development : Dockerfile.db.template .env.development
-	while read -r line; do export "$${line:Q}"; done < .env.development \
-		&& envsubst < "$<" > "$@"
-
-docker-compose.development.yml : docker-compose.template.yml .env.development
-	while read -r line; do export "$${line:Q}"; done < .env.development \
+# make .test files by processing .template files with .env.test substitutions
+%.test : %.template .env.test
+	while read -r line; do export "$${line:Q}"; done < .env.test \
 		&& envsubst < "$<" > "$@"
 
 .PHONY: development-up
-development-up : docker-compose.development.yml Dockerfile.development Dockerfile.db.development
-	docker-compose --file docker-compose.development.yml up \
+development-up : docker-compose.yml.development Dockerfile.development Dockerfile.db.development firebase.json.development
+	docker-compose --file docker-compose.yml.development up \
 	  --build --abort-on-container-exit --remove-orphans \
 	  2> >(awk '{print "dev err: " $$0}' 1>&2) > >(awk '{print "dev out: " $$0}')
 
@@ -25,23 +23,11 @@ development-down : docker-compose.development.yml
 
 .PHONY: development-down-volumes
 development-down-volumes : docker-compose.development.yml
-	docker-compose --file docker-compose.development.yml down --volumes
-
-Dockerfile.test : Dockerfile.template .env.test
-	while read -r line; do export "$${line:Q}"; done < .env.test \
-		&& envsubst < "$<" > "$@"
-
-Dockerfile.db.test : Dockerfile.db.template .env.test
-	while read -r line; do export "$${line:Q}"; done < .env.test \
-		&& envsubst < "$<" > "$@"
-
-docker-compose.test.yml : docker-compose.template.yml .env.test
-	while read -r line; do export "$${line:Q}"; done < .env.test \
-		&& envsubst < "$<" > "$@"
+	docker-compose --file docker-compose.development.yml down --volumes || true
 
 .PHONY: test-up
-test-up : docker-compose.test.yml Dockerfile.test Dockerfile.db.test
-	docker-compose --file docker-compose.test.yml up \
+test-up : docker-compose.yml.test Dockerfile.test Dockerfile.db.test firebase.json.test
+	docker-compose --file docker-compose.yml.test up \
 	  --build --abort-on-container-exit --remove-orphans \
 	  2> >(awk '{print "test err: " $$0}' 1>&2) > >(awk '{print "test out: " $$0}')
 
@@ -51,7 +37,11 @@ test-down : docker-compose.test.yml
 
 .PHONY: test-down-volumes
 test-down-volumes : docker-compose.test.yml
-	docker-compose --file docker-compose.test.yml down --volumes
+	docker-compose --file docker-compose.test.yml down --volumes || true
+
+.PHONY: down
+down : development-down test-down
+	docker-compose --file docker-compose.test.yml down || true
 
 .PHONY: clean
 clean : development-down-volumes test-down-volumes

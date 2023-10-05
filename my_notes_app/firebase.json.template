@@ -1,0 +1,12 @@
+{
+    "emulators": {
+        "firestore": {
+    	  "port": ${REACT_APP_FIRESTORE_PORT},
+	  "host": "0.0.0.0"
+        },
+        "auth": {
+          "port": ${REACT_APP_AUTH_PORT},
+          "host": "0.0.0.0"
+        }
+    }
+}

@@ -20,10 +20,10 @@
     },
   "scripts": {
       "start": "NODE_ENV=production react-scripts start",
-      "development": "npm install && NODE_ENV=development react-scripts start",
-    "build": "NODE_ENV=production react-scripts build",
-    "test": "NODE_ENV=test react-scripts test",
-    "eject": "react-scripts eject"
+      "development": "npm install && PORT=$REACT_APP_API_PORT NODE_ENV=$REACT_APP_NODE_ENV react-scripts start",
+      "build": "PORT=$REACT_APP_API_PORT NODE_ENV=$REACT_APP_NODE_ENV react-scripts build",
+      "test": "PORT=$REACT_APP_API_PORT NODE_ENV=$REACT_APP_NODE_ENV react-scripts test",
+      "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

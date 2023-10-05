@@ -1,14 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-/Dockerfile.test
-/Dockerfile.development
-/Dockerfile.db.test
-/Dockerfile.db.development
-/docker-compose.test.yml
-/docker-compose.development.yml
-
-
-
+Dockerfile.test
+Dockerfile.development
+Dockerfile.db.test
+Dockerfile.db.development
+docker-compose.yml.test
+docker-compose.yml.development
+firebase.json.development
+firebase.json.test
 # dependencies
 /node_modules
 /.pnp
