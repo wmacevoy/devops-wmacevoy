@@ -18,12 +18,12 @@ development-up : docker-compose.yml.development Dockerfile.development Dockerfil
 	  2> >(awk '{print "dev err: " $$0}' 1>&2) > >(awk '{print "dev out: " $$0}')
 
 .PHONY: development-down
-development-down : docker-compose.development.yml
-	docker-compose --file docker-compose.development.yml down || true
+development-down : docker-compose.yml.development
+	docker-compose --file docker-compose.yml.development down || true
 
 .PHONY: development-down-volumes
-development-down-volumes : docker-compose.development.yml
-	docker-compose --file docker-compose.development.yml down --volumes || true
+development-down-volumes : docker-compose.yml.development
+	docker-compose --file docker-compose.yml.development down --volumes || true
 
 .PHONY: test-up
 test-up : docker-compose.yml.test Dockerfile.test Dockerfile.db.test firebase.json.test
@@ -32,16 +32,15 @@ test-up : docker-compose.yml.test Dockerfile.test Dockerfile.db.test firebase.js
 	  2> >(awk '{print "test err: " $$0}' 1>&2) > >(awk '{print "test out: " $$0}')
 
 .PHONY: test-down
-test-down : docker-compose.test.yml
-	docker-compose --file docker-compose.test.yml down || true
+test-down : docker-compose.yml.test
+	docker-compose --file docker-compose.yml.test down || true
 
 .PHONY: test-down-volumes
-test-down-volumes : docker-compose.test.yml
-	docker-compose --file docker-compose.test.yml down --volumes || true
+test-down-volumes : docker-compose.yml.test
+	docker-compose --file docker-compose.yml.test down --volumes || true
 
 .PHONY: down
 down : development-down test-down
-	docker-compose --file docker-compose.test.yml down || true
 
 .PHONY: clean
 clean : development-down-volumes test-down-volumes
@@ -56,7 +55,8 @@ development : development-up
 .PHONY: up
 up:
 	@( \
-	  trap '$(MAKE) development-down test-down' HUP INT; \
+	  trap '$(MAKE) down' HUP INT EXIT; \
+          $(MAKE) down || $(MAKE) clean ; \
 	  nice $(MAKE) development-up & \
 	  nice $(MAKE) test-up & \
 	  wait; \

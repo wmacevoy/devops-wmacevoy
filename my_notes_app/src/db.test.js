@@ -1,43 +1,28 @@
 const request = require('supertest');
-const { db } = require('./db');
+const { db, signup, isFirestoreReady, isAuthReady } = require('./db');
 const { Data } = require('./Data');
 
-const signup = async (user) => {
-    const emulating =
-	  (process.env.REACT_APP_NODE_ENV === 'development')
-	  || (process.env.REACT_APP_NODE_ENV === 'test');
-    
-    const dbHost = `${process.env.REACT_APP_NAME}-${process.env.REACT_APP_NODE_ENV}-db`;
-    const authPort = parseInt(process.env.REACT_APP_AUTH_PORT);
-    const apiKey = process.env.REACT_APP_FIREBASE_API_KEY;
-    const authUrl = emulating
-	  ? `http://${dbHost}:${authPort}/identitytoolkit.googleapis.com/v1`
-	  : `https://identitytoolkit.googleapis.com/v1`;
-
-    const signupUrl = `${authUrl}/accounts:signUp`;
-
-    console.log(`url ${signupUrl}`);
-    await fetch(`${signupUrl}?key=${apiKey}`,{
-	  method: 'POST',
-	  headers: {
-	      'Accept': 'application/json',
-	      'Content-Type': 'application/json',
-	  },
-	  body: JSON.stringify({
-	      email: user.email,
-	      password: user.password
-	  })
-    });
-    return user;
-}
+// https://dev.to/codingwithadam/how-to-make-a-sleep-function-in-javascript-with-async-await-499b
 
 describe('db', () => {
-    it('loads in  600 seconds or less', async () => {
+    it('has auth ready within 10 seconds', async () => {
+	while (!(await isAuthReady())) {
+	    await sleep(1);
+	}
+    },10000);
+    it('has firestore ready within 10 seconds', async () => {
+	while (!(await isFirestoreReady())) {
+	    await sleep(1);
+	}
+    },10000);
+       
+    it('loads', async () => {
 	const data = new Data();
 	const admins = await data.getAdmins();
 	const admin = admins[0];
-	await signup(admin);
-	const firebase = await db({admin});
+	// balk while admin server is available
+	while ((await signup(admin)).status === 404) { await sleep(1); }
+	const firebase = await db({user : admin, heartbeat: true});
 	expect(firebase !== null).toBe(true);
-    },5000);
+    },5000); // timeout in milliseconds
 });
