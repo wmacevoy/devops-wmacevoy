@@ -2,7 +2,7 @@ const fs = require('fs');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
 
-class Data {
+export class Data {
     constructor(options) {
 	this._dataFile = options?.dataFile ?? `./src/private/data-${process.env.NODE_ENV}.json`;
 	this._data = null;
@@ -48,4 +48,4 @@ class Data {
     }
 }
 
-module.exports = { Data };
+export default Data;

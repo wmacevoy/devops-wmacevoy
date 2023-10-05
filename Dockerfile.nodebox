@@ -6,6 +6,8 @@ RUN apt update \
   && apt clean \
   && /bin/rm -rf /var/lib/apt/lists/*
 
+RUN sudo npm install --global --yes firebase-tools
+
 USER node
 
 VOLUME /repo

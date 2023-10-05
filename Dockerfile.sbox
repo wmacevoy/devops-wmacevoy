@@ -1,33 +1,26 @@
-FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/tags
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:427.0.0
 
 RUN apt update \
   && DEBIAN_FRONTEND=noninteractive apt install -y \
-  git git-crypt gnupg openssl openssh-server python3 sudo \
+  curl git git-crypt gnupg openssl openssh-server python3 sudo \
   && apt clean \
   && /bin/rm -rf /var/lib/apt/lists/*
 
-ARG USER=user
-ARG UID=1001
-ARG GID=1001
-
-# Set environment variables
-ENV USER                ${USER}
-ENV HOME                /home/${USER}
-
-# Create user and setup permissions on /etc/sudoers
-RUN useradd -m -s /bin/bash -N -u $UID $USER && \
-    echo "${USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers && \
-    chmod 0440 /etc/sudoers && \
-    chmod g+w /etc/passwd 
-
-RUN curl -L https://fly.io/install.sh | sh
+# Install Node.js from the NodeSource 18.x repository
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+    
+RUN npm install -g firebase-tools
 
 VOLUME ${HOME}/.ssh
 VOLUME ${HOME}/.gnupg
 WORKDIR /repo
 VOLUME /repo
 
-USER user
+USER cloudsdk
+
+RUN curl -L https://fly.io/install.sh | sh
 
 CMD bash -i
 

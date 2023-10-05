@@ -7,7 +7,6 @@ describe('data', () => {
 	expect(typeof data).toBe('object');
 	expect(typeof data.dataFile).toBe('string');
 	expect(typeof await data.getData()).toBe('object');
-	console.log(JSON.stringify(await data.getData()));
     });
     it('has roles', async () => {
 	const data = new Data();

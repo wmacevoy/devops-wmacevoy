@@ -1,13 +1,26 @@
 const request = require('supertest');
-const { db, auth } = require('./db');
+const { db, signup, isFirestoreReady, isAuthReady } = require('./db');
 const { Data } = require('./Data');
 
+// https://dev.to/codingwithadam/how-to-make-a-sleep-function-in-javascript-with-async-await-499b
+
 describe('db', () => {
-    it('loads in  600 seconds or less', async () => {
+    it('has auth ready within 30 seconds', async () => {
+	while (!(await isAuthReady())) {
+	    await sleep(1);
+	}
+    },30000);
+    it('has firestore ready within 30 seconds', async () => {
+	while (!(await isFirestoreReady())) {
+	    await sleep(1);
+	}
+    },30000);
+       
+    it('loads', async () => {
 	const data = new Data();
 	const admins = await data.getAdmins();
-	const user = admins[0];
-	const firebase = await db({user});
+	const admin = admins[0];
+	const firebase = await db({user : admin, heartbeat: true});
 	expect(firebase !== null).toBe(true);
-    },5000);
+    },5000); // timeout in milliseconds
 });

@@ -1,4 +1,4 @@
-class FirebaseEnv {
+export class FirebaseEnv {
     constructor() {
 	this._config = null;
     }
@@ -25,4 +25,4 @@ class FirebaseEnv {
     }
 }
 
-module.exports = { FirebaseEnv };
+export default FirebaseEnv;

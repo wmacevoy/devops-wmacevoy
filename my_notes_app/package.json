@@ -19,11 +19,11 @@
         "supertest": "^6.3.3"
     },
   "scripts": {
-      "start": "npm install && NODE_ENV=production react-scripts start",
-      "development": "npm install && NODE_ENV=development react-scripts start",
-    "build": "npm install && NODE_ENV=production react-scripts build",
-    "test": "npm install && NODE_ENV=test react-scripts test",
-    "eject": "npm install && react-scripts eject"
+      "start": "npp install && react-scripts start",
+      "development": "npm install && react-scripts start",
+      "build": "npm install && react-scripts build",
+      "test": "npm install && react-scripts test",
+      "eject": "npm install && react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

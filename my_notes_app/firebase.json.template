@@ -1,0 +1,20 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+        "firestore": {
+    	  "port": ${REACT_APP_FIRESTORE_PORT},
+	  "host": "0.0.0.0"
+        },
+        "auth": {
+          "port": ${REACT_APP_AUTH_PORT},
+          "host": "0.0.0.0"
+        },
+	"ui": {
+     	  "enabled": true,
+	  "port": ${REACT_APP_FIRESTORE_UI_PORT},
+          "host": "0.0.0.0"	 
+        }
+    }
+}

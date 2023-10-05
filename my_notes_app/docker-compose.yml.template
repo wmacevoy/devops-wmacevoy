@@ -1,0 +1,51 @@
+version: '3'
+services:
+  # Node.js Server
+  notes-${REACT_APP_NODE_ENV}:
+    build:
+      context: .
+      dockerfile: Dockerfile.${REACT_APP_NODE_ENV}
+    container_name: ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}
+    env_file:
+      - ./.env.${REACT_APP_NODE_ENV}
+    environment:
+      - NODE_ENV=${REACT_APP_NODE_ENV}
+      - PORT=${REACT_APP_API_PORT}
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - "${REACT_APP_API_PORT}:${REACT_APP_API_PORT}"
+    networks:
+      - ${REACT_APP_NAME}_${REACT_APP_NODE_ENV}_network
+
+    depends_on:
+      - ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-db
+    command: npm run ${REACT_APP_NODE_ENV}
+
+# Firebase local database
+  ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-db:
+    user: "1000:1000"
+    build:
+      context: .
+      dockerfile: Dockerfile.db.${REACT_APP_NODE_ENV}
+    container_name: ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-db
+    env_file:
+      - ./.env.${REACT_APP_NODE_ENV}
+    volumes:
+      - .:/app
+      - ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-data:/var/lib/firebase/data
+    working_dir: /app
+    ports:
+      - "${REACT_APP_FIRESTORE_PORT}:${REACT_APP_FIRESTORE_PORT}"
+      - "${REACT_APP_AUTH_PORT}:${REACT_APP_AUTH_PORT}"
+      - "${REACT_APP_STORAGE_PORT}:${REACT_APP_STORAGE_PORT}"
+      - "${REACT_APP_FIRESTORE_UI_PORT}:${REACT_APP_FIRESTORE_UI_PORT}"      
+    networks:
+      - ${REACT_APP_NAME}_${REACT_APP_NODE_ENV}_network
+volumes:
+  ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-data:
+  
+networks:
+  ${REACT_APP_NAME}_${REACT_APP_NODE_ENV}_network:
+    driver: bridge
