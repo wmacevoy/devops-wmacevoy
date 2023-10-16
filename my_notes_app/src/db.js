@@ -44,13 +44,19 @@ export const isAuthReady = async () => {
 	const dbHost = `${process.env.REACT_APP_NAME}-${process.env.REACT_APP_NODE_ENV}-db`;
 	const authPort = parseInt(process.env.REACT_APP_AUTH_PORT);
 
-	const response = await fetch(`http://${dbHost}:${authPort}`,{
-	  method: 'GET',
-	  headers: {
-	      'Accept': 'application/json',
-	  }
-	});
-	return response.status === 200 && response.ok;
+	try {
+	    const response = await fetch(`http://${dbHost}:${authPort}`,{
+		method: 'GET',
+		headers: {
+		    'Accept': 'application/json',
+		}
+	    });
+
+	    return response.status === 200 && response.ok;
+	} catch (error) {
+	    console.log(`isAuthReady ${error.message}`);
+	    return false;
+	}
     }
     return true;
 }
@@ -60,15 +66,47 @@ export const isFirestoreReady = async () => {
 	const dbHost = `${process.env.REACT_APP_NAME}-${process.env.REACT_APP_NODE_ENV}-db`;
 	const firestorePort = parseInt(process.env.REACT_APP_FIRESTORE_PORT);
 
-	const response = await fetch(`http://${dbHost}:${firestorePort}`,{
-	  method: 'GET',
-	  headers: {
-	      'Accept': 'application/json'
-	  }
-	});
-	return response.status === 200 && response.ok;
+	try {
+	    const response = await fetch(`http://${dbHost}:${firestorePort}`,{
+		method: 'GET',
+		headers: {
+		    'Accept': 'application/json'
+		}
+	    });
+	    return response.status === 200 && response.ok;
+	} catch (error) {
+	    console.log(`isFirestoreReady ${error.message}`);
+	    return false;
+	}
     }
     return true;
+}
+
+export const isReadyObject = {
+    'firestore': isFirestoreReady,
+    'auth': isAuthReady
+}
+
+export const isReady = async (wait=0) => {
+    for (;;) {
+	const result = await Promise.all(Object.keys(isReadyObject).map(
+	    async (name) => { return { name, ready: await isReadyObject[name]() }; }
+	));
+	
+        const notReady = result.filter(({ ready }) => !ready).map(({ name }) => name);
+	if (notReady.length === 0) {
+	    return true;
+	}
+
+	if (wait <= 0) {
+	    return false;
+	}
+
+	console.log(`Not ready: ${notReady}`);
+	const pause = Math.min(1,wait);
+	await sleep(pause);
+	wait -= pause;
+  }
 }
 
 export const getApiKey = () => {
@@ -77,7 +115,6 @@ export const getApiKey = () => {
 
 export const signup = async (user) => {
     const signupUrl = `${getAuthUrl()}/accounts:signUp?key=${getApiKey()}`;
-
     const response = await fetch(`${signupUrl}`,{
 	  method: 'POST',
 	  headers: {
@@ -116,25 +153,9 @@ const config = async (app,options) => {
     }
 }
 
-export const isReady = async (wait) => {
-    for (;;) {
-	const firestoreReady = isFirestoreReady();
-	const authReady = isAuthReady();
-	const ready = firestoreReady && authReady;
-	if (!ready && wait) {
-	    let unready = [];
-	    if (!firestoreReady) unready.push("firestore");
-	    if (!authReady) unready.push("auth");
-	    console.log(`waiting for services to start: ${unready.join(", ")}`);
-	    await sleep(1);
-	}
-	return ready;
-    }
-}
-
 export const db = async (options) => {
     if (app === null) {
-	const wait = true;
+	const wait = 60;
 	await isReady(wait);
 	
 	const firebaseEnv = new FirebaseEnv(options);
