@@ -1,4 +1,6 @@
 FROM node:18-alpine
+RUN apk add util-linux
+RUN npm install -g npm@10
 RUN apk add bash
 WORKDIR /app
 EXPOSE 3000

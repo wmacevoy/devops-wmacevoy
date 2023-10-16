@@ -1,0 +1,26 @@
+#!/bin/bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR" || exit 1
+
+owned=false
+lock="./balked-npm-install.lock"
+my_lock="./balked-npm-install.lock-$(uuidgen)"
+
+cleanup() {
+  if [ $owned = true ]
+  then
+    /bin/rm -rf "$lock"
+  fi
+}
+
+trap cleanup EXIT
+
+while ! ln -s "$lock" "$my_lock"
+do
+  echo waiting my turn
+  sleep 1
+done
+
+owned=true
+npm install
