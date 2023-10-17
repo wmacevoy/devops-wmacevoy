@@ -3,7 +3,17 @@ FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:427.0.0
 
 RUN apt update \
   && DEBIAN_FRONTEND=noninteractive apt install -y \
-  curl git curl ca-certificates git-crypt gnupg openssl openssh-server python3 sudo \
+  build-essential \
+  ca-certificates \
+  cmake \
+  curl \
+  git \
+  git-crypt \
+  gnupg \
+  openssl \
+  openssh-server \
+  python3 \
+  sudo \
   && apt clean \
   && /bin/rm -rf /var/lib/apt/lists/*
 
