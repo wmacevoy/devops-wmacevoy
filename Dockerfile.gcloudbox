@@ -36,5 +36,6 @@ USER cloudsdk
 RUN curl -L https://fly.io/install.sh | sh
 RUN echo export PATH='"'/home/cloudsdk/.fly/bin:'${PATH}''"' >> /home/cloudsdk/.bashrc
 
-CMD bash -i
+CMD bash
+
 
