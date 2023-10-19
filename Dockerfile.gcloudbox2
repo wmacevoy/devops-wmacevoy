@@ -1,0 +1,20 @@
+# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/tags
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:450.0.0
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+  curl \
+  sudo \
+  ruby
+
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN usermod -a -G sudo cloudsdk
+
+USER cloudsdk
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+ENV PATH=/home/linuxbrew/.linuxbrew/bin:${PATH}
+
+RUN brew install node@18
+ENV PATH=/home/linuxbrew/.linuxbrew/opt/node@18/bin:${PATH}
+RUN npm install -g firebase-tools
+
+CMD bash
