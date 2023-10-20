@@ -33,7 +33,7 @@ CONTAINER_HOME=/home/$CONTAINER_USER
 
 docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" "$@"
 
-# RUN echo export PATH='"'/home/linuxbrew/.linuxbrew/bin:'${PATH}''"' >> /root/.bashrc
+# 
 
 
 # /home/linuxbrew/.linuxbrew/
