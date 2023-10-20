@@ -2,11 +2,9 @@ FROM node:18
 
 RUN apt update \
   && DEBIAN_FRONTEND=noninteractive apt install -y \
-  git git-crypt gnupg openssl openssh-server python3 sudo \
+  build-essential cmake curl git git-crypt gnupg openssl openssh-server python3 sudo \
   && apt clean \
   && /bin/rm -rf /var/lib/apt/lists/*
-
-RUN sudo npm install --global --yes firebase-tools
 
 USER node
 
