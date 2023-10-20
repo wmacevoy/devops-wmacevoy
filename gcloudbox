@@ -1,9 +1,12 @@
-#!/bin/bash
+#!/bin/bash -x
 
+# returns docker id of image for given tag
 built() {
-    docker image ls --format '{{.ID}}:{{.Repository}}' | grep ":$1" | cut -d: -f1
+    local tag="$1"
+    docker image ls --format '{{.ID}}:{{.Repository}}.' | grep ":${tag}." | cut -d: -f1
 }
 
+# returns seconds since epoch when the given docker id was built
 built_timestamp() {
     id="$1"
     iso=$(docker inspect --format '{{.Created}}' "$id")
@@ -11,6 +14,7 @@ built_timestamp() {
     date -j -f "%Y-%m-%dT%H:%M:%S" "$trunc" "+%s"
 }
 
+# returns seconds since epoch when file was last modified
 modification_timestamp() {
     stat -f "%m" "$1"
 }
@@ -22,13 +26,59 @@ tag="${tag// /_}"
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
 
-if ! docker build -t "$tag" -f "$dockerfile" "$dir"
+if uname -m | grep -q arm
 then
-    echo "Build failed."
-    exit 1
+    platform=linux/arm64
+else
+    platform=linux/amd64
+fi
+
+build=false
+
+# build if first arg to this command is --build
+if [ $# -gt 0 -a "$1" = "--build" ]
+then
+    shift
+    build=true
+fi
+
+# build if this $tag has never been built
+id="$(built "$tag")"
+if [ $? -ne 0 ]
+then
+    echo "building $dockerfile"
+    build=true
+fi
+
+# build if dockerfile has been modified since last build
+if [ $build != "true" ]
+then
+  built_time="$(built_timestamp "$tag")"
+  modification_time="$(modification_timestamp "$dockerfile")"
+
+  if [ $built_time -lt $modification_time ]
+  then
+      echo "rebuilding because $dockerfile changed since last build."
+      build=true
+  fi
+fi
+
+if [ $build = true ]
+then
+    if ! docker build --platform $platform --tag "$tag" --file "$dockerfile" "$dir"
+    then
+	echo "Build failed."
+	exit 1
+    fi
 fi
 
 CONTAINER_USER=cloudsdk
 CONTAINER_HOME=/home/$CONTAINER_USER
 
-docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" bash -i
+docker run --platform $platform \
+       --user $CONTAINER_USER \
+       --volume "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" \
+       --volume "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" \
+       --volume "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" \
+       --volume "$(pwd):/repo" --rm -it "$tag" "$@"
+
