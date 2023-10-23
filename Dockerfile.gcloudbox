@@ -1,5 +1,7 @@
 # https://github.com/GoogleCloudPlatform/cloud-sdk-docker/tags
-FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:427.0.0
+FROM --platform=$TARGETPLATFORM gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" > /log
 
 RUN apt update \
   && DEBIAN_FRONTEND=noninteractive apt install -y \
@@ -17,6 +19,7 @@ RUN apt update \
   && apt clean \
   && /bin/rm -rf /var/lib/apt/lists/*
 
+RUN npm install -g npm@10
 RUN npm install -g firebase-tools
 
 WORKDIR /repo
