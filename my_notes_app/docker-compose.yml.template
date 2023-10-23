@@ -2,6 +2,7 @@ version: '3'
 services:
   # Node.js Server
   notes-${REACT_APP_NODE_ENV}:
+    platform: ${PLATFORM}
     build:
       context: .
       dockerfile: Dockerfile.${REACT_APP_NODE_ENV}
@@ -25,6 +26,7 @@ services:
 
 # Firebase local database
   ${REACT_APP_NAME}-${REACT_APP_NODE_ENV}-db:
+    platform: ${PLATFORM}
     user: "1000:1000"
     build:
       context: .
