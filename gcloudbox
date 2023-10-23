@@ -1,12 +1,9 @@
-#!/bin/bash -x
+#!/bin/bash
 
-# returns docker id of image for given tag
 built() {
-    local tag="$1"
-    docker image ls --format '{{.ID}}:{{.Repository}}.' | grep ":${tag}." | cut -d: -f1
+    docker image ls --format '{{.ID}}:{{.Repository}}' | grep ":$1" | cut -d: -f1
 }
 
-# returns seconds since epoch when the given docker id was built
 built_timestamp() {
     id="$1"
     iso=$(docker inspect --format '{{.Created}}' "$id")
@@ -14,17 +11,12 @@ built_timestamp() {
     date -j -f "%Y-%m-%dT%H:%M:%S" "$trunc" "+%s"
 }
 
-# returns seconds since epoch when file was last modified
 modification_timestamp() {
     stat -f "%m" "$1"
 }
 
-extension="$(basename "${BASH_SOURCE[0]}")"
-tag=$(basename "${BASH_SOURCE[0]}" | tr '[:upper:]' '[:lower:]')
-tag="${tag// /_}"
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
-dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
 
 if uname -m | grep -q arm
 then
@@ -32,6 +24,11 @@ then
 else
     platform=linux/amd64
 fi
+
+extension="$(basename "${BASH_SOURCE[0]}")"
+tag=$(basename "${BASH_SOURCE[0]}" | tr '[:upper:]' '[:lower:]')
+tag="${tag// /_}"
+dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
 
 build=false
 
@@ -72,13 +69,11 @@ then
     fi
 fi
 
-CONTAINER_USER=cloudsdk
+
+CONTAINER_USER=node
 CONTAINER_HOME=/home/$CONTAINER_USER
 
-docker run --platform $platform \
-       --user $CONTAINER_USER \
-       --volume "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" \
-       --volume "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" \
-       --volume "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" \
-       --volume "$(pwd):/repo" --rm -it "$tag" "$@"
+#CONTAINER_USER=root
+#CONTAINER_HOME=/root
 
+docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" "$@"
