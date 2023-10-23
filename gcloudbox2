@@ -20,17 +20,15 @@ dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 
 if uname -m | grep -q arm
 then
-    platform=linux/arm/v8
-    platform_ext=arm64
+    platform=linux/arm64
 else
     platform=linux/amd64
-    platform_ext=amd64    
 fi
 
 extension="$(basename "${BASH_SOURCE[0]}")"
 tag=$(basename "${BASH_SOURCE[0]}" | tr '[:upper:]' '[:lower:]')
 tag="${tag// /_}"
-dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension-$platform_ext"
+dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
 
 build=false
 
@@ -72,7 +70,7 @@ then
 fi
 
 
-CONTAINER_USER=cloudsdk
+CONTAINER_USER=node
 CONTAINER_HOME=/home/$CONTAINER_USER
 
 #CONTAINER_USER=root
