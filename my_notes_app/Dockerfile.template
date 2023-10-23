@@ -1,7 +1,8 @@
-FROM node:18-alpine
-RUN apk add util-linux
+FROM --platform=${TARGETPLATFORM} node:18
+RUN apt update \
+  && DEBIAN_FRONTEND=noninteractive apt install -y \
+  uuid-runtime
 RUN npm install -g npm@10
-RUN apk add bash
 WORKDIR /app
 EXPOSE 3000
 CMD [ "npm", "start" ]

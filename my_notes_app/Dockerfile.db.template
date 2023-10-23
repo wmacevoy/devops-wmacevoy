@@ -1,31 +1,37 @@
-# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/tags
-FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:427.0.0
+FROM --platform=${TARGETPLATFORM} node:18
 
-RUN apt update \
-  && DEBIAN_FRONTEND=noninteractive apt install -y \
-  curl git curl ca-certificates git-crypt gnupg openssl openssh-server python3 sudo \
-  && apt clean \
-  && /bin/rm -rf /var/lib/apt/lists/*
+#
+# install gcloud tools
+#
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+     apt-transport-https \
+     ca-certificates \
+     curl \
+     git \
+     git-crypt \
+     gnupg \
+     openjdk-17-jdk \
+     openssl \
+     openssh-server \
+     python3 \
+     python3-pip \
+     sudo \
+     uuid-runtime
 
-RUN mkdir -p /etc/apt/keyrings && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.asc] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | tee /usr/share/keyrings/cloud.google.asc
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    google-cloud-cli
 
-RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
 
-RUN apt update \
-  && DEBIAN_FRONTEND=noninteractive apt install -y \
-  nodejs \
-  && apt clean \
-  && /bin/rm -rf /var/lib/apt/lists/*
+#
+# Use yarn to install firebase tools
+#
+RUN yarn global add firebase-tools
 
-RUN npm install -g firebase-tools
 
 WORKDIR /repo
 
-USER cloudsdk
-
-RUN curl -L https://fly.io/install.sh | sh
-RUN echo export PATH='"'/home/cloudsdk/.fly/bin:'${PATH}''"' >> /home/cloudsdk/.bashrc
+USER node
 
 CMD firebase emulators:start --project ${REACT_APP_FIREBASE_PROJECT_ID} --config firebase.json.${REACT_APP_NODE_ENV} --import /var/lib/firebase/data --export-on-exit /var/lib/firebase/data
-# CMD bash -c "while true ; do date ; sleep 30 ; done"
-
