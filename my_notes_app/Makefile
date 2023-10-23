@@ -3,11 +3,13 @@ FLYCTL=$(shell which flyctl || echo '$HOME/.fly/bin/flyctl')
 
 # make .development files by processing .template files with .env.development substitutions
 %.development : %.template .env.development
+	export PLATFORM=$$(./platform); \
 	while read -r line; do export "$${line:Q}"; done < .env.development \
 		&& envsubst < "$<" > "$@"
 
 # make .test files by processing .template files with .env.test substitutions
 %.test : %.template .env.test
+	export PLATFORM=$$(./platform); \
 	while read -r line; do export "$${line:Q}"; done < .env.test \
 		&& envsubst < "$<" > "$@"
 
