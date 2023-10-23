@@ -73,7 +73,4 @@ fi
 CONTAINER_USER=node
 CONTAINER_HOME=/home/$CONTAINER_USER
 
-#CONTAINER_USER=root
-#CONTAINER_HOME=/root
-
 docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" "$@"
