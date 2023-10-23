@@ -1,0 +1,16 @@
+#!/bin/bash
+
+platform() {
+  if uname -m | grep -q arm
+  then
+    echo linux/arm64
+  else
+    echo linux/amd64
+  fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  platform "$@"
+fi
+
+
