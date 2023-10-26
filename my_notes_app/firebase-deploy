@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ ! -f firebase.json ]
+then
+    echo "not in firebase application directory."
+    exit 1
+fi
+
+firebase use --add devops-fall2023-notes
+
+if firebase login:list | grep -iq "no authorized accounts"
+then
+	if ! firebase login --no-localhost
+	then
+	    echo "login failed."
+	    exit 1
+        fi
+fi
+
+/bin/rm -rf build
+if ! npm run build
+then
+    echo "build failed."
+    exit 1
+fi
+
+firebase deploy
+	
