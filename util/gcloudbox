@@ -73,4 +73,27 @@ fi
 CONTAINER_USER=node
 CONTAINER_HOME=/home/$CONTAINER_USER
 
-docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig:rw" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh:rw" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg:rw" -v "$(pwd):/repo" --rm -it "$tag" "$@"
+mkdir -p "$HOME/.config"
+mkdir -p "$HOME/.gnupg"
+mkdir -p "$HOME/.ssh"
+
+
+# work with repo in container
+if ! git config --global --get-all safe.directory | grep -q "^/repo$"
+then
+  git config --global --add safe.directory /repo
+fi
+
+# get the repo base directory
+REPO="$(cd "$(git rev-parse --show-toplevel)" && pwd)"
+
+# find the working directory relative to the repo directory
+WORK="$(pwd)"
+if [ "$REPO" != "$WORK" ]
+then
+    WORK="${WORK#$REPO/}"
+else
+    WORK="."
+fi
+
+docker run -u 1000:1000 -v "$HOME/.config:$CONTAINER_HOME/.config" -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"

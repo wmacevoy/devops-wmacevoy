@@ -24,6 +24,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 #
 RUN yarn global add firebase-tools
 
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN usermod -a -G sudo node
+
+RUN chown -R node:node /usr/local/share/.config
+RUN chown -R node:node /usr/local/bin
+
 USER node
 WORKDIR /home/node
 CMD bash
