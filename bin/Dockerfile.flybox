@@ -1,17 +1,41 @@
-FROM node:18
+#
+# fly only supports x86 containers - the launch script only uses platform linux/amd64 ...
+#
+FROM --platform=${TARGETPLATFORM} node:18
 
-RUN apt update \
-  && DEBIAN_FRONTEND=noninteractive apt install -y \
-  curl ca-certificates curl git git-crypt gnupg openssl openssh-server python3 sudo \
-  && apt clean \
-  && /bin/rm -rf /var/lib/apt/lists/*
+#
+# install gcloud tools
+#
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+     apt-transport-https \
+     build-essential \
+     ca-certificates \
+     curl \
+     cmake \
+     git \
+     git-crypt \
+     gnupg \
+     openjdk-17-jdk \
+     openssl \
+     openssh-server \
+     python3 \
+     python3-pip \
+     sudo \
+     uuid-runtime
+#
+# Use yarn to install firebase tools
+#
+RUN yarn global add firebase-tools
 
-WORKDIR /repo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN usermod -a -G sudo node
+
+RUN chown -R node:node /usr/local/share/.config
+RUN chown -R node:node /usr/local/bin
 
 USER node
+WORKDIR /home/node
 
 RUN curl -L https://fly.io/install.sh | sh
-RUN echo export PATH='"'/home/node/.fly/bin:'${PATH}''"' >> /home/node/.bashrc
 
-CMD bash -i
-
+CMD bash

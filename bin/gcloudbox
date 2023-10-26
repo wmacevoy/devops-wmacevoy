@@ -41,7 +41,7 @@ fi
 
 # build if this $tag has never been built
 id="$(built "$tag")"
-if [ $? -ne 0 ]
+if [ "$id" = "" ]
 then
     echo "building $dockerfile"
     build=true
@@ -96,4 +96,4 @@ else
     WORK="."
 fi
 
-docker run -u 1000:1000 -v "$HOME/.config:$CONTAINER_HOME/.config" -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
+docker run --platform $platform -u 1000:1000 -v "$HOME/.config:$CONTAINER_HOME/.config" -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
