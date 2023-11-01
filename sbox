@@ -1,9 +1,0 @@
-#!/bin/bash
-if ! docker build -t sbox -f Dockerfile.sbox .
-then
-   echo "Build failed."
-   exit 1
-fi
-
-CONTAINER_USER=cloudsdk
-docker run -u $CONTAINER_USER -v "$HOME/.gitconfig:/home/$CONTAINER_USER/.gitconfig:rw" -v "$HOME/.ssh:/home/$CONTAINER_USER/.ssh:rw" -v "$HOME/.gnupg:/home/$CONTAINER_USER/.gnupg:rw" -v "$(pwd):/repo" --rm -it sbox bash -i
