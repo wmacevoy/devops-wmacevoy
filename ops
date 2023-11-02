@@ -2,14 +2,14 @@
 
 if [ -n "$BASH_VERSION" ]
 then
-    eval 'ops() { local dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"; local cmd="$1"; shift; if [ "$cmd" = "dir" ] ; then echo "$dir" ; else "$dir/bin/$cmd" "$@"; fi }; export -f ops;'
+    eval 'ops() { local dir="'"$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"'"; local cmd="$1"; shift; if [ "$cmd" = "dir" ] ; then echo "$dir" ; else "$dir/bin/$cmd" "$@"; fi }; export -f ops;'
 
 elif [ -n "$ZSH_VERSION" ]
 then
-    eval 'ops() { local dir; dir="$( cd -- "$( dirname -- "$0" )" && pwd )"; local cmd="$1"; shift; if [ "$cmd" = "dir" ]; then echo "$dir"; else "$dir/bin/$cmd" "$@"; fi };'
+    eval 'ops() { local dir; dir="'"$( cd -- "$( dirname -- "$0" )" && pwd )"'"; local cmd="$1"; shift; if [ "$cmd" = "dir" ]; then echo "$dir"; else "$dir/bin/$cmd" "$@"; fi };'
 elif [ -n "$KSH_VERSION" ]
 then
-    eval 'ops() { local dir="$( cd -- "$( dirname -- "$0" )" >/dev/null 2>&1 && pwd )"; local cmd="$1"; shift; if [ "$cmd" = "dir" ]; then echo "$dir"; else "$dir/bin/$cmd" "$@"; fi; }; export -f ops;'
+    eval 'ops() { local dir="'"$( cd -- "$( dirname -- "$0" )" >/dev/null 2>&1 && pwd )"'"; local cmd="$1"; shift; if [ "$cmd" = "dir" ]; then echo "$dir"; else "$dir/bin/$cmd" "$@"; fi; }; export -f ops;'
 else
     echo unknown shell
     false
