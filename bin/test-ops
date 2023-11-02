@@ -1,0 +1,18 @@
+#!/bin/bash
+
+dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )"
+
+if docker run --rm  -v "$dir:/app" alpine:3 sh -c 'apk add --update bash && bash -c "cd /app; . ./ops; bash -c \"cd /; ops dir\""' | egrep -q "^/app$"
+then
+  echo "bash ops ok."
+fi
+
+if docker run --rm  -v "$dir:/app" alpine:3 sh -c 'apk add --update zsh && zsh -c "cd /app; . ./ops; cd /; ops dir"' | egrep -q "^/app$"
+then
+  echo "zsh ops ok (no subshell -- unsupported by zsh)."
+fi
+
+if docker run --rm  -v "$dir:/app" alpine:3 sh -c 'apk add --update loksh && ksh -c "cd /app; . ./ops; cd /; ops dir"' | egrep -q "^/app$"
+then
+  echo "ksh ops ok (no subshell -- unsupported by ksh)."
+fi
