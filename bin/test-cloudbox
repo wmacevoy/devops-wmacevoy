@@ -1,0 +1,17 @@
+#!/bin/bash
+
+dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )"
+
+cd "$dir"
+
+for arch in amd64 arm64
+do
+  platform="linux/$arch"
+  if bash -x "./bin/cloudbox" --tag test-cloudbox-$arch --build --platform $platform  ./bin/test-cloudbox-tests --platform $platform --user node
+  then
+      echo "test $platform ok"
+  else
+      echo "test $platform failed"
+      exit 1
+  fi
+done
