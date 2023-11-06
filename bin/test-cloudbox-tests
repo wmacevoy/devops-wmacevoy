@@ -92,4 +92,10 @@ then
     ok=false
 fi
 
+if ! cd /tmp && git clone git@github.com:octocat/Hello-World
+then
+    echo git cannot clone via ssh
+    ok=false
+fi
+
 test "$ok" = "true"

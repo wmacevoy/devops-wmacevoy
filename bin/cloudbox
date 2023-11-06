@@ -134,18 +134,28 @@ fi
 CONTAINER_USER="$user"
 CONTAINER_HOME="$home"
 
-mkdir -p "$HOME/.config"
-mkdir -p "$HOME/.gnupg"
-mkdir -p "$HOME/.ssh"
 
 # work with repo in container
-if ! git config --global --get-all safe.directory | grep -q "^/repo$"
+if ! git config --get-all safe.directory | grep -q "^/repo$"
 then
-  git config --global --add safe.directory /repo
+  git config --add safe.directory /repo
 fi
 
 # get the repo base directory
 REPO="$(cd "$(git rev-parse --show-toplevel)" && pwd)"
+
+EMAIL="$(git config --global user.email)"
+
+REPO_HOME="$REPO/private/home/$EMAIL"
+
+mkdir -p "$REPO_HOME"
+
+for dir in .gnupg .ssh .config .gitconfig
+do
+    if [ ! -r "$REPO_HOME/$dir" -a -r "$HOME/$dir" ] ; then
+	cp -r "$HOME/$dir" "$REPO_HOME/$dir"
+    fi
+done
 
 # find the working directory relative to the repo directory
 WORK="$(pwd)"
@@ -156,4 +166,4 @@ else
     WORK="."
 fi
 
-docker run --platform $platform -u 1000:1000 -v "$HOME/.config:$CONTAINER_HOME/.config" -v "$HOME/.gitconfig:$CONTAINER_HOME/.gitconfig" -v "$HOME/.ssh:$CONTAINER_HOME/.ssh" -v "$HOME/.gnupg:$CONTAINER_HOME/.gnupg" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
+docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
