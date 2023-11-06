@@ -15,6 +15,18 @@ do
     esac
 done
 
+if [ ! -x "$(which docker)" ]
+then
+    echo "docker is not available in this shell"
+    exit 1
+fi
+
+if ! docker run --rm hello-world | grep -q "Hello from Docker!"
+then
+    echo "docker hello-world failed"
+    exit 1
+fi
+
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 extension="$(basename "${BASH_SOURCE[0]}")"
 if [ "$tag" = "" ]
