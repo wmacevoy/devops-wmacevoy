@@ -30,7 +30,7 @@ sudo apt-get upgrade -y
 # install basic dev tools
 sudo apt-get install -y git git-crypt gnupg build-essential wslu
 ```
-2.3 Link linux and winddows users.  Create some useful symbolic links between your windows and linux user accounts.  After this step, `~/Home` in WSL should be your windows home directory, and `~/Downloads` should be your downloads directory.
+2.3 Link linux and windows users.  Create some useful symbolic links between your windows and linux user accounts.  After this step, `~/WinHome` in WSL should be your windows home directory, and `~/Downloads` should be your downloads directory.
 ```bash
 # Symbolic link wsl ~/Downloads folder to windows Downloads folder,
 # typically /home/<lin user>/Downloads -> /mnt/c/Users/<win user>/Downloads
@@ -45,20 +45,13 @@ ln -s "$(wslpath -u "$(wslvar USERPROFILE)")" "$HOME/WinHome"
 # typically, /home/<lin user>/Documents -> /mnt/c/Users/<win user>/Documents
 ln -s "$(wslpath -u "$(powershell.exe -command "[Environment]::GetFolderPath('MyDocuments')" | tr -d '\r\n')")" "$HOME/Documents"
 ```
-2.4 Exit wsl/ubuntu for the docker install.  Restart it afterwards.
-```bash
-exit
-```
 
 3. Install Docker Desktop: https://www.docker.com
-3.1 You will have to run as administrator (search for Docker Desktop in the task bar, then right click on the blue whal3 and choose `Run as administrator`).openssl aes-256-cbc -a -d -pbkdf2 -in dot-gnupg.tar.gz.enc -out - | tar zxvf -
-3.2 I could not get to login using the GUI, but this first launch does some important configurations.
-3.3 Run wsl/ubuntu (search for ubuntu in the task bar search box, you should run as a regular user) to login with docker:
+3.1 Do not "run as administrator" this seems to break things later.
+3.2 Log in using the GUI - I had to reinstall once before this would work.
+3.3 In the Settings (gearbox) -> Resources make sure you have WSL 2 integration.
+3.4 In WSL/Ubuntu (you may have to restart this).  Check that hello-world works
 ```bash
-# should print /usr/bin/docker:
-which docker
-# you will have to provide your wsl/ubuntu password for sudo (admin), then your docker email/password:
-sudo docker login
 # test that docker is running - should produce a 'Hello from Docker!' kind of output
 docker run --rm hello-world
 ```
