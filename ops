@@ -8,10 +8,12 @@ elif [ -n "$ZSH_VERSION" ]
 then
     eval 'ops() { local dir; dir="'"$( cd -- "$( dirname -- "$0" )" && pwd )"'"; local cmd="$1"; shift; if [ "$cmd" = "dir" ]; then echo "$dir"; else "$dir/bin/$cmd" "$@"; fi };'
     echo "'ops command args...'" runs commands in `ops dir`/bin
+    echo "since functions cannot be exported to subshells in zsh, bash is recommended."
 elif [ -n "$KSH_VERSION" ]
 then
     eval 'ops() { local dir="'"$( cd -- "$( dirname -- "$0" )" >/dev/null 2>&1 && pwd )"'"; local cmd="$1"; shift; if [ "$cmd" = "dir" ]; then echo "$dir"; else "$dir/bin/$cmd" "$@"; fi; };'
-    echo "'ops command args...'" runs commands in `ops dir`/bin    
+    echo "'ops command args...'" runs commands in `ops dir`/bin
+    echo "since functions cannot be exported to subshells in zsh, bash is recommended."
 else
     echo unknown shell
     false
