@@ -71,10 +71,11 @@ pay them so there is a simple exchange as to why they want to keep your password
         tar zcf - .gnupg | openssl aes-256-cbc -a -salt  -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
         ```
         Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to LastPass.
-5. Make new SSH keys for each development environment and upload them to github. (no password - your drive is encrypted and its only for this laptop) and copy public key to clipboard
+5. Make SSH keys if you have not already (no password - your drive is encrypted and its only for this laptop):
 ```bash
 test -f ~/.ssh/id_rsa || ssh-keygen
 ```
+
 6. Export the SSH public key to Github.  You can copy the public key to the clipboard with
 ```bash
 cat ~/.ssh/id_rsa.pub | clip.exe
