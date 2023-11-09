@@ -60,9 +60,9 @@ pay them so there is a simple exchange as to why they want to keep your password
     openssl aes-256-cbc -a -d -pbkdf2 -in ~/downloads/gnupg-tgz.enc -out - | tar -C ~ zxvf -
     ```
     2. If you have never configured and saved your private keys
-        1. Generate a new public/private gpg key
+        1. Generate a new public/secret gpg key.  Use defaults (ECC sign & encrypt, Curve25519, forever), your full name, and github email) and password protect your secret keys
         ```bash
-        # Use defaults, for 2.4.3 ECC sign & encrypt, Curve25519, forever), your full name, and github email.
+        # Use defaults, for 2.4.3 
 	# You should password protect them (you won't have to use the password that much)
         gpg --full-gen-key
         ```
