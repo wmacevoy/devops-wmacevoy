@@ -1,0 +1,41 @@
+#!/bin/bash
+
+while [ $# -gt 0 ]
+do
+    case "$1"
+    in
+	--platform) PLATFORM=$2; shift; shift;;
+	--node-version) NODE_VERSION=$2; shift; shift;;	
+	*) break;;
+    esac
+done
+
+
+ok=true
+
+if ! node --version | grep -q "$NODE_VERSION"
+then
+  echo "node $NODE_VERSION expected but got $(node --version)"
+  ok=false
+fi
+
+if [ $PLATFORM = "linux/amd64" ] ; then
+  MACHINE=x86_64
+fi
+
+if [ $PLATFORM = "linux/arm64" ] ; then
+  MACHINE=aarch64
+fi
+
+if [ "$(uname -m)" != $MACHINE ] ; then
+  echo "machine is $(uname -m), not $MACHINE"
+  ok=false
+fi
+
+if [ $ok = true ] ; then
+    echo "all tests passed."
+else
+  echo "some tests failed."
+  exit 1
+fi
+
