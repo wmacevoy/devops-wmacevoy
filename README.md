@@ -71,28 +71,28 @@ pay them so there is a simple exchange as to why they want to keep your password
         tar zcf - .gnupg | openssl aes-256-cbc -a -salt  -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
         ```
         Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to LastPass.
-5. Make new SSH keys for each development environment and upload them to github.
+5. Make new SSH keys for each development environment and upload them to github. (no password - your drive is encrypted and its only for this laptop) and copy public key to clipboard
 ```bash
-# make keys if they are missing (no password - your drive is encrypted and its only for this laptop)
 test -f ~/.ssh/id_rsa || ssh-keygen
-# copy them to the clipboard
+```
+6. Export the SSH public key to Github.  You can copy the public key to the clipboard with
+```bash
 cat ~/.ssh/id_rsa.pub | clip.exe
 ```
-After this step, the public key should be in the clipboard.  Log into github, and in the hidden menu under your avatar, you can go to settings and "ssh/gpg keys" and paste in the new key.
-6. Configure `git`.  Use your real name and email you registered on GitHub:
+Log into github, and in the hidden menu under your avatar, you can go to settings and "ssh/gpg keys" and paste in the new key.
+7. Configure `git`.  Use your real name and email you registered on GitHub:
 ```bash
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 ```
-7. Clone this repository.  You will have less trouble if you live in the WSL directory namespace:
+8. Clone this repository.  You will have less trouble if you live in the WSL directory namespace:
 ```bash
 cd # change to your WSL home directory
 mkdir projects
 cd projects
 git clone git@github.com:wmacevoy/devops-wmacevoy
 ```
-
-8. Run some tests
+9. Run some tests
 ```bash
 cd ~/projects/devops-wmacevoy
 . ./ops
