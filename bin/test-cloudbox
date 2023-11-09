@@ -7,7 +7,7 @@ cd "$dir"
 for arch in amd64 arm64
 do
   platform="linux/$arch"
-  if bash -x "./bin/cloudbox" --tag test-cloudbox-$arch --build --platform $platform  ./bin/test-cloudbox-tests --platform $platform --user node
+  if "./bin/cloudbox" --tag test-cloudbox-$arch --build --platform $platform  ./bin/test-cloudbox-tests --platform $platform --user node
   then
       echo "test $platform ok"
   else
