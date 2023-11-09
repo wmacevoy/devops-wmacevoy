@@ -29,13 +29,13 @@ pay them so there is a simple exchange as to why they want to keep your password
     # install basic dev tools
     sudo apt-get install -y git git-crypt gnupg build-essential wslu
     ```
-    3. Link linux and windows users.  Create some useful symbolic links between your windows and linux user accounts.  After this step, `~/WinHome` in WSL should be your windows home directory, and `~/Downloads` should be your downloads directory.
+    3. Link linux and windows users.  Create some useful symbolic links between your windows and linux user accounts.
     ```bash
     # Symbolic link wsl ~/downloads folder to windows Downloads folder,
     # typically /home/<lin user>/downloads -> /mnt/c/Users/<win user>/Downloads
     ln -s "$(wslpath -u "$(powershell.exe -command "(New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path" | tr -d '\r\n')")" "$HOME/downloads"
 
-    # Symbolic link wsl ~/WinHome folder to windows user home,
+    # Symbolic link wsl ~/winhome folder to windows user home,
     # typically, /home/<lin user>/winhome -> /mnt/c/Users/<win user>
     ln -s "$(wslpath -u "$(wslvar USERPROFILE)")" "$HOME/winhome"
 
