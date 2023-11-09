@@ -1,0 +1,12 @@
+#!/bin/bash
+
+PLATFORM=linux/amd64
+TAG=amazonlinux-node
+
+if ! docker build --platform $PLATFORM -t $TAG -f Dockerfile.$TAG .
+then
+   echo "build failed."
+   exit 1
+fi
+
+docker run --platform $PLATFORM --rm -it $TAG "$@"
