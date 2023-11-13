@@ -9,9 +9,8 @@ Cloud storage create:
 ```
 az storage account create --name crn27509storage --resource-group devops-fall2023-wmacevoy_group
 az storage account show-connection-string --name  crn27509storage --resource-group devops-fall2023-wmacevoy_group
-
-
 ```
 
+CLI for package management: https://learn.microsoft.com/en-us/nuget/consume-packages/install-use-packages-dotnet-cli
 
-
+Place to search for packages: nuget.org
