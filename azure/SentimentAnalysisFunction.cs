@@ -3,14 +3,16 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-public static class SentimentAnalysisFunction
+public class SentimentAnalysisFunction
 {
-    private static readonly HttpClient httpClient = new HttpClient();
-    private static readonly string openAiApiKey = Environment.GetEnvironmentVariable("ChatGPTKey") ?? "";
-    private static readonly string openAiUrl = "https://api.openai.com/v1/engines/davinci-codex/completions";
-
+    private readonly HttpClient httpClient;
+    private readonly string openAiApiKey = Environment.GetEnvironmentVariable("openAiApiKey") ?? "";
+    private readonly string openAiUrl = "https://api.openai.com/v1/engines/davinci-codex/completions";
+    public SentimentAnalysisFunction(HttpClient _httpClient) {
+        httpClient = _httpClient;
+    }
     [FunctionName("SentimentAnalysisFunction")]
-    public static async Task Run([QueueTrigger("myqueue-items", Connection = "AzureWebJobsStorage")]string myQueueItem, ILogger log)
+    public async Task Run([QueueTrigger("myqueue-items", Connection = "AzureWebJobsStorage")]string myQueueItem, ILogger log)
     {
         log.LogInformation($"C# Queue trigger function processed: {myQueueItem}");
 
@@ -18,7 +20,7 @@ public static class SentimentAnalysisFunction
         log.LogInformation($"Sentiment: {sentiment}");
     }
 
-    private static async Task<string> AnalyzeSentiment(string text)
+    public async Task<string> AnalyzeSentiment(string text)
     {
         var requestData = new
         {
