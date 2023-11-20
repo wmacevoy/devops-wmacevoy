@@ -4,6 +4,7 @@ while [ $# -gt 0 ]
 do
     case "$1"
     in
+	--test) test=true; shift;;
 	--platform) platform="$2"; shift; shift ;;
 	--dockerfile) dockerfile="$2"; shift; shift ;;	
 	--tag) tag="$2"; shift; shift ;;
@@ -150,15 +151,21 @@ REPO_HOME="$REPO/private/home/$EMAIL"
 
 mkdir -p "$REPO_HOME"
 
-for dir in .gnupg .ssh .config .gitconfig
+for cfg in .gnupg .ssh .config .gitconfig
 do
-    if [ ! -r "$REPO_HOME/$dir" -a -r "$HOME/$dir" ] ; then
-	cp -r "$HOME/$dir" "$REPO_HOME/$dir"
+    if [ ! -r "$REPO_HOME/$cfg" -a -r "$HOME/$cfg" ] ; then
+	cp -r "$HOME/$cfg" "$REPO_HOME/$cfg"
     fi
 done
 
 # find the working directory relative to the repo directory
-WORK="$(pwd)"
+if [ "$test" = true ]
+then
+    WORK="$dir"
+else
+    WORK="$(pwd)"
+fi
+
 if [ "$REPO" != "$WORK" ]
 then
     WORK="${WORK#$REPO/}"
@@ -166,4 +173,18 @@ else
     WORK="."
 fi
 
-docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
+if [ "$test" = true ]
+then
+    if ! docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" ./test-cloudbox-tests --platform $platform --user $user
+    then
+	echo "test $platform failed"
+	exit 1
+    else
+	echo "test $platform ok"
+	exit 0
+    fi
+else
+    docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
+fi
+
+

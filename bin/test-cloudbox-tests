@@ -64,6 +64,11 @@ then
 	ok=false
     fi
 fi
+if ! sudo -S ls < /dev/null
+then
+    echo "sudo command failed."
+    ok=false
+fi
     
 if [ ! -x "$(which gcloud)" ]
 then
