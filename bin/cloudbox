@@ -129,7 +129,12 @@ fi
 
 if [ "$home" = "" ]
 then
-    home="/home/$user"
+    if [ "$user" != "root" ]
+    then
+	home="/home/$user"
+    else
+	home="/root"
+    fi
 fi
 
 CONTAINER_USER="$user"
@@ -173,9 +178,17 @@ else
     WORK="."
 fi
 
+if [ "$user" != root ]
+then
+    # do not specify group - makes sudo fail
+    UOPT="-u 1000"
+else
+    UOPT="-u root"
+fi
+
 if [ "$test" = true ]
 then
-    if ! docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" ./test-cloudbox-tests --platform $platform --user $user
+    if ! docker run --platform $platform $UOPT -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" ./test-cloudbox-tests --platform $platform --user $user
     then
 	echo "test $platform failed"
 	exit 1
@@ -184,7 +197,5 @@ then
 	exit 0
     fi
 else
-    docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
+    docker run --platform $platform $UOPT -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
 fi
-
-
