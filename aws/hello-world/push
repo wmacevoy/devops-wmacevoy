@@ -1,5 +1,6 @@
 #!/bin/bash
+ok=true
 docker login --username AWS --password-stdin 111168381990.dkr.ecr.us-east-1.amazonaws.com < docker-login
-docker build --platform linux/amd64 -t devops-fall2023 -f Dockerfile.amazonlinux-node .
+bdocker build --platform linux/amd64 -t devops-fall2023 -f Dockerfile.amazonlinux-node .
 docker tag devops-fall2023:latest 111168381990.dkr.ecr.us-east-1.amazonaws.com/devops-fall2023:latest
 docker push 111168381990.dkr.ecr.us-east-1.amazonaws.com/devops-fall2023:latest
