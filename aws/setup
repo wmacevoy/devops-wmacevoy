@@ -1,0 +1,227 @@
+#!/bin/bash
+
+app=hello-world
+platform=linux/amd64
+region=us-east-1
+account_id=111168381990
+ecr_url=$account_id.dkr.ecr.$region.amazonaws.com
+tag=devops-fall2023
+cluster=devops-fall2023r1
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if [ $# -gt 0 ]
+then
+    # all | app | configure | dockerfile
+    setup="$1"
+else
+    # setup missing components only
+    setup=""
+fi
+
+#
+# create hello-world react app
+#
+mk_app() {
+    if [ ! -d $app -o "$setup" = all -o "$setup" = app -o "$setup" = app-create ]
+    then
+	ops cloudbox npx create-react-app $app
+    fi
+    if [ ! -d $app/.gitattributes -o "$setup" = app -o "$setup" = app-gitattributes ]
+    then
+	cat >"$app/.gitattributes" <<EOF
+*.env filter=git-crypt diff=git-crypt
+*.env.* filter=git-crypt diff=git-crypt
+**/private/** filter=git-crypt diff=git-crypt
+EOF
+    fi
+    
+}
+
+#
+# create dockerfile to run react app
+#
+mk_dockerfile() {
+    if [ ! -r $app/Dockerfile.amazonlinux-node -o "$setup" = all -o "$setup" = dockerfile ]
+    then
+	cat >"$app/Dockerfile.amazonlinux-node" <<EOF
+FROM --platform=\${TARGETPLATFORM} amazonlinux:2023
+RUN yum install -y nodejs bash
+# Create app directory in the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Bundle app source
+COPY . .
+
+# Your app binds to port 3000 by default, so use the EXPOSE instruction to have it mapped by the docker daemon
+EXPOSE 3000
+
+# Define the command to run your app
+CMD [ "npm", "start" ]
+EOF
+    fi
+}
+
+mk_configure() {
+    if [ ! -r $app/private/docker-login -o "$setup" = all -o "$setup" = configure -o "$setup" = configure-login ]
+    then
+	mkdir -p $app/private
+	ops cloudbox bash -c "aws ecr get-login-password --region $region > $app/private/docker-login"
+    fi
+    # setup.py
+    if [ ! -r $app/setup.py -o "$setup" = all -o "$setup" = configure -o "$setup" = configure-python ]
+    then
+	cat >"$app/setup.py" <<EOF
+from setuptools import setup, find_packages
+
+setup(
+    name='configure',
+    version='0.1.0',
+    packages=find_packages(),
+    install_requires=[
+        'boto3'
+    ],
+)
+EOF
+    fi
+
+    #python virtual environment
+    if [ ! -d $app/venv -o "$setup" = all -o "$setup" = configure -o "$setup" = configure-python ]
+    then
+	ops cloudbox python3 -m venv $app/venv
+    fi
+
+    #python run setup.py in virtual environment
+    if [ ! -d $app/venv/lib/python*/site-packages/boto3 -o "$setup" = all -o "$setup" = configure -o "$setup" = configure-python ]
+    then
+	(cd $app && ops cloudbox venv/bin/python3 -m pip install .)
+    fi
+
+}
+
+mk_scripts() {
+    if [ ! -x $app/push -o "$setup" = all -o "$setup" = scripts -o "$setup" = scripts-push ]
+    then
+	cat >"$app/push" <<EOF
+#!/bin/bash
+cd "\$(dirname "\${BASH_SOURCE[0]}")"
+
+ops cloudbox bash -c "aws ecr get-login-password --region ${region} > private/docker-login"
+if ! docker login --username AWS --password-stdin $ecr_url < private/docker-login
+then
+  echo docker login failed.
+  exit 1
+fi
+if ! docker build --platform $platform -t $tag -f Dockerfile.amazonlinux-node .
+then
+  echo docker build failed.
+  exit 1
+fi
+
+if ! docker tag $tag:latest $ecr_url/$tag:latest
+then
+  echo docker tag failed.
+  exit 1
+fi
+
+if ! docker push $ecr_url/$tag:latest
+then
+   docker push failed.
+   exit 1
+fi
+EOF
+	chmod u+x,g+x "$app/push"
+    fi
+    
+    if [ ! -x "$app/deploy" -o "$setup" = all -o "$setup" = scripts -o "$setup" = scripts-deploy ]
+    then
+	cat >"$app/deploy" <<EOF
+#!/bin/bash
+cd "\$(dirname "\${BASH_SOURCE[0]}")"
+
+if ! ./push
+then
+   echo ecr push failed.
+   exit 1
+fi
+if ! ops cloudbox aws ecs update-service --cluster $cluster --service ${service} --force-new-deployment
+then
+   echo ecs deployment failed.
+   exit 1
+fi
+EOF
+	chmod u+x,g+x $app/deploy
+    fi
+    if [ ! -r "$app/register-task.json" -o "$setup" = all -o "$setup" = scripts -o "$setup" = scripts-register-task ]
+    then
+	cat >"$app/register-task.json" <<EOF
+{
+    "family": "${tag}-${app}",
+    "containerDefinitions": [
+        {
+            "name": "${app}-app",
+            "image": "${ecr_url}/${tag}:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "${app}-app-3000-tcp",
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/${tag}-${app}",
+                    "awslogs-region": "${region}",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        }
+    ],
+    "executionRoleArn": "arn:aws:iam::${account_id}:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "3072",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
+EOF
+    fi
+    if [ ! -x "$app/register-task" -o "$setup" = all -o "$setup" = scripts -o "$setup" = scripts-register-task ]
+    then
+	cat >"$app/register-task" <<EOF
+#!/bin/bash
+cd "\$(dirname "\${BASH_SOURCE[0]}")"
+
+ops cloudbox aws ecs register-task-definition --region ${region} --cli-input-json file://register-task.json
+EOF
+	chmod u+x,g+x "$app/register-task"
+    fi
+}
+
+mk_app
+mk_dockerfile
+mk_configure
+mk_scripts
