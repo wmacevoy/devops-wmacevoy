@@ -113,6 +113,7 @@ mk_scripts() {
 #!/bin/bash
 cd "\$(dirname "\${BASH_SOURCE[0]}")"
 
+ops cloudbox bash -c "aws ecr get-login-password --region ${region} > private/docker-login"
 if ! docker login --username AWS --password-stdin $ecr_url < private/docker-login
 then
   echo docker login failed.
@@ -150,7 +151,7 @@ then
    echo ecr push failed.
    exit 1
 fi
-if ! ops cloudbox aws ecs update-service --cluster $cluster --service $service --force-new-deployment
+if ! ops cloudbox aws ecs update-service --cluster $cluster --service ${service} --force-new-deployment
 then
    echo ecs deployment failed.
    exit 1
