@@ -5,7 +5,6 @@ platform=linux/amd64
 region=us-east-1
 account_id=111168381990
 ecr_url=$account_id.dkr.ecr.$region.amazonaws.com
-gmail_username=wmacevoy
 tag=devops-fall2023
 cluster=devops-fall2023r1
 
