@@ -1,0 +1,41 @@
+#!/bin/bash
+Location="..."
+FunctionAppName=HelloWorld
+ResourceGroupName=RGDevOpsFall2023
+StorageAccountName=SADevOpsFall2023
+Runtime=dotnet-isolated
+RuntimeVersion=6
+FunctionVersion=4
+OSType=Linux
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if [ $# -gt 0 ]
+then
+    # all | app | configure | dockerfile
+    setup="$1"
+else
+    # setup missing components only
+    setup=""
+fi
+
+if ! ops cloudbox az account show
+then
+  if ! ops cloudbox az login
+  then
+    echo azure login failed
+    exit 1
+  fi
+fi
+
+if ! ops cloudbox az group --name "$ResourceGroupName" 2>/dev/null | grep true
+then
+	ops cloudbox az group create --name "$ResourceGroupName" --location "$Location" 2>/dev/null
+fi
+
+if ! az storage account show --name "$StorageAccountName" --resource-group "$ResourceGroupName"
+then
+  az storage account create --name "$StorageAccountName" --location "$Location" --resource-group "$ResourceGroupName" --sku Standard_LRS
+fi
+
+az functionapp create --resource-group "$ResourceGroupName" --consumption-plan-location "$Location" --os-type "$OSType" --runtime "$Runtime" --runtime-version "$RuntimeVersion" --functions-version "$FunctionVersion" --name "$FunctionAppName" --storage-account "$StorageAccountName"
