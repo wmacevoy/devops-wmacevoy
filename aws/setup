@@ -1,6 +1,6 @@
 #!/bin/bash
 
-app=hello-world
+app=hello-world-2
 platform=linux/amd64
 region=us-east-1
 account_id=111168381990
