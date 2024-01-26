@@ -1,0 +1,28 @@
+#!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+PLATFORM=linux/amd64
+TAG=amazonlinux-node
+TEST=false
+
+while [ $# -gt 0 ]; do
+    case "$1"
+    in
+	--test) TEST=true; shift;;
+	--platform) PLATFORM=$2; shift; shift;;
+	*) break;;
+    esac
+done
+
+if ! docker build --platform $PLATFORM -t $TAG -f "$DIR/Dockerfile.$TAG" "$DIR"
+then
+   echo "build failed."
+   exit 1
+fi
+
+if [ $TEST = true ] ; then
+    docker run --platform $PLATFORM --rm -it -v "$DIR:/test" -w "/test" $TAG bash ./tests \
+	   --platform $PLATFORM \
+	   --node-version 'v18.'
+else
+    docker run --platform $PLATFORM --rm -it $TAG "$@"
+fi

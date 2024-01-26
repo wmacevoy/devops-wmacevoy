@@ -1,0 +1,19 @@
+FROM --platform=${TARGETPLATFORM} amazonlinux:2023
+RUN yum install -y nodejs bash
+# Create app directory in the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Bundle app source
+COPY . .
+
+# Your app binds to port 3000 by default, so use the EXPOSE instruction to have it mapped by the docker daemon
+EXPOSE 3000
+
+# Define the command to run your app
+CMD [ "npm", "start" ]

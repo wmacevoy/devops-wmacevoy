@@ -1,0 +1,65 @@
+FROM --platform=${TARGETPLATFORM} node:18
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+     apt-transport-https \
+     build-essential \
+     ca-certificates \
+     curl \
+     cmake \
+     git \
+     git-crypt \
+     gnupg \
+     openjdk-17-jdk \
+     openssl \
+     openssh-server \
+     python3 \
+     python3-pip \
+     sudo \
+     uuid-runtime
+
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN usermod -a -G sudo node
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+     sdkmanager
+
+ARG ANDROID_HOME=/opt/android-sdk
+ENV ANDROID_HOME=${ANDROID_HOME}
+RUN mkdir -p ${ANDROID_HOME}
+RUN chown -R node:node ${ANDROID_HOME}
+
+RUN sdkmanager "emulator" "cmdline-tools;latest" "platforms;android-34" "platform-tools;latest"
+RUN sdkmanager "system-images;android-34;default;$(uname -m)"
+RUN $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
+ --tag default --package "system-images;android-34;default;$(uname -m)" --sdcard 64M \
+ --device "Nexus 5" --name Nexus_5_API_34
+# /opt/android-sdk/emulator/emulator @Nexus_5_API_33
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+     clang cmake chromium git libgtk-3-dev liblzma-dev libstdc++-12-dev ninja-build pkg-config 
+
+ENV CHROME_EXECUTABLE=/usr/bin/chromium
+ARG FLUTTER_HOME=/opt/flutter 
+ENV FLUTTER_HOME=${FLUTTER_HOME}
+RUN mkdir -p ${FLUTTER_HOME}
+RUN chown -R node:node ${FLUTTER_HOME}
+
+ENV PATH ${PATH}:${FLUTTER_HOME}/bin:${FLUTTER_HOME}/bin/cache/dart-sdk/bin
+
+WORKDIR /opt
+# RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git
+RUN curl -L -o flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.13.9-stable.tar.xz
+RUN tar xf flutter.tar.xz
+RUN chown node:node ${FLUTTER_HOME}
+
+USER node
+RUN git config --global --add safe.directory /opt/flutter
+RUN flutter config --android-sdk ${ANDROID_HOME}
+RUN yes | flutter doctor --android-licenses \
+    && flutter doctor || true
+
+WORKDIR /home/node
+
+CMD bash

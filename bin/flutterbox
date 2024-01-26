@@ -1,0 +1,175 @@
+#!/bin/bash
+
+while [ $# -gt 0 ]
+do
+    case "$1"
+    in
+	--platform) platform="$2"; shift; shift ;;
+	--dockerfile) dockerfile="$2"; shift; shift ;;	
+	--tag) tag="$2"; shift; shift ;;
+	--user) user="$2"; shift; shift ;;
+	--home) home="$2"; shift; shift ;;
+	--build)    build=true; shift;;
+	--help)     echo "usage: $0 [--platform linux/arm64|linux/amd64] [--tag <this> ] [--dockerfile Dockerfile.<this> ] [--user node ] [ --home /home/<user> ] [--build] [command ...]"; shift; exit 0;;
+	*) break;
+    esac
+done
+
+if [ ! -x "$(which docker)" ]
+then
+    echo "docker is not available in this shell"
+    exit 1
+fi
+
+if ! docker run --rm hello-world | grep -q "Hello from Docker!"
+then
+    echo "docker hello-world failed"
+    exit 1
+fi
+
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+extension="$(basename "${BASH_SOURCE[0]}")"
+if [ "$tag" = "" ]
+then
+    tag=$(basename "${BASH_SOURCE[0]}" | tr '[:upper:]' '[:lower:]')
+    tag="${tag// /_}"
+fi
+
+if [ "$docerfile" = "" ]
+then
+    dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
+fi
+
+if [ "$platform" = "" ]
+then
+    machine="$(uname -m)"
+    if ( uname -m | grep -q arm || uname -m | grep aarch)
+    then
+	platform=linux/arm64
+    else
+	platform=linux/amd64
+    fi
+fi
+
+docker_id() {
+    local tag="$1"
+    local id="$(docker image ls --format ':id:{{.ID}}:tag:{{.Repository}}:' | grep ":tag:$tag:" | cut -d: -f3)"
+    test "$id" != "" && echo $id
+}
+
+iso2sec() {
+    local iso="$1"
+    local trunc=$(echo "$iso" | cut -d. -f1)
+    if [ "$(uname)" = "Darwin" ]
+    then
+	date -j -f "%Y-%m-%dT%H:%M:%S" "$trunc" "+%s"
+    else
+	date --date="$trunc" "+%s"
+    fi
+}
+
+docker_timestamp() {
+    local id="$1"
+    if local iso="$(docker inspect --format '{{.Created}}' "$id")"
+    then
+	iso2sec "$iso"
+    else
+	echo 0
+    fi
+}
+
+modification_timestamp() {
+    if [ "$(uname)" = "Darwin" ]
+    then
+	stat -f "%m" "$1"
+    else
+	stat -c "%Y" "$1"
+    fi
+}
+
+if [ "$build" = "" ]
+then
+    build=false
+fi
+
+# build if this $tag has never been built
+if ! id="$(docker_id "$tag")"
+then
+    echo "building $dockerfile (no such tag)"
+    build=true
+fi
+
+# build if dockerfile has been modified since last build
+if [ $build != "true" ]
+then
+  built_time="$(docker_timestamp "$id")"
+  modification_time="$(modification_timestamp "$dockerfile")"
+
+  if [ "$built_time" -lt "$modification_time" ]
+  then
+      echo "rebuilding because $dockerfile changed since last build."
+      build=true
+  fi
+fi
+
+if [ $build = true ]
+then
+    if ! docker build --platform $platform --tag "$tag" --file "$dockerfile" "$dir"
+    then
+	echo "Build failed."
+	exit 1
+    fi
+fi
+
+if [ "$user" = "" ]
+then
+    user=node
+fi
+
+if [ "$home" = "" ]
+then
+    home="/home/$user"
+fi
+
+CONTAINER_USER="$user"
+CONTAINER_HOME="$home"
+
+
+# work with repo in container
+if ! git config --get-all safe.directory | grep -q "^/repo$"
+then
+  git config --global --add safe.directory /repo
+fi
+
+# work with flutter in container
+if ! git config --get-all safe.directory | grep -q "^/opt/flutter$"
+then
+  git config --global --add safe.directory /opt/flutter
+fi
+
+# get the repo base directory
+REPO="$(cd "$(git rev-parse --show-toplevel)" && pwd)"
+
+EMAIL="$(git config --global user.email)"
+
+REPO_HOME="$REPO/private/home/$EMAIL"
+
+mkdir -p "$REPO_HOME"
+
+for dir in .gnupg .ssh .config .gitconfig
+do
+    if [ ! -r "$REPO_HOME/$dir" -a -r "$HOME/$dir" ] ; then
+	cp -r "$HOME/$dir" "$REPO_HOME/$dir"
+    fi
+done
+
+# find the working directory relative to the repo directory
+WORK="$(pwd)"
+if [ "$REPO" != "$WORK" ]
+then
+    WORK="${WORK#$REPO/}"
+else
+    WORK="."
+fi
+
+docker run --platform $platform -u 1000:1000 -v "$REPO_HOME:$CONTAINER_HOME" -v "$REPO:/repo" -w "/repo/$WORK" --rm -it "$tag" "$@"
