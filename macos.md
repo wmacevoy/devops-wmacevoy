@@ -52,7 +52,7 @@ test -f ~/.ssh/id_rsa || ssh-keygen
 
 6. Export the SSH public key to Github.  You can copy the public key to the clipboard with
 ```bash
-cat ~/.ssh/id_rsa.pub | clip.exe
+cat ~/.ssh/id_rsa.pub | pbcopy
 ```
 Log into github, and in the hidden menu under your avatar, you can go to settings and "ssh/gpg keys" and paste in the new key.
 7. Configure `git`.  Use your real name and email you registered on GitHub:
