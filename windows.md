@@ -44,6 +44,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
     3. In the Settings (gearbox) -> Resources make sure you have WSL 2 integration.
     4. Check that your Ubuntu LTS is the default WSL distribution for integration
        with docker. In your WSL shell check with
+   ```bash
     # check that This distrubution is the default distribution
     wsl.exe --list
     echo "You should see: $WSL_DISTRO_NAME (Default)"
