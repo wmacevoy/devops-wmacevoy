@@ -11,7 +11,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 pay them so there is a simple exchange as to why they want to keep your passwords secure.
 * ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
 
-1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in lastpass.
+1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in a secure location (1Password).
 2. Install WSL/Ubuntu LTS.  Use the app store to install the latest version of Ubuntu LTS.
     1. The installer should open up a console to create your ubuntu account.  Use a user name with no spaces.
     2. In the console run (this will download perhaps a gigabyte of data and take several minutes to run):
@@ -43,10 +43,22 @@ pay them so there is a simple exchange as to why they want to keep your password
     1. Do not "run as administrator" this seems to break things later.
     2. Log in using the GUI - I had to reinstall once before this would work.
     3. In the Settings (gearbox) -> Resources make sure you have WSL 2 integration.
-    4. In WSL/Ubuntu (you may have to restart this).  Check that hello-world works
+    4. Check that your Ubuntu LTS is the default WSL distribution for integration
+       with docker. In your WSL shell check with
+    # check that This distrubution is the default distribution
+    wsl.exe --list
+    echo "You should see: $WSL_DISTRO_NAME (Default)"
+    ```
+    If you don't see your distribution as the default, set it with,
     ```bash
-    # test that docker is running - should produce a 'Hello from Docker!' kind of output
-    docker run --rm hello-world
+    wsl.exe --set-default "$WSL_DISTRO_NAME"
+    ```
+    I would restart docker and wsl if you have to set the default.  If it is the
+    default, and you have started docker, then you should be able to run the
+    docker command from within the container
+    ```bash
+    # test that docker is running kind of output
+    docker run --rm hello-world # output should be Hello from Docker!...
     ```
 4. Configure GnuPG
     1. If you already have a GnuPG account, download the tar file from Lastpass and extract it into your $HOME/.gnupg directory:
