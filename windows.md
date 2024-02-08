@@ -7,8 +7,7 @@ convenient.  It should be able to run a recent updated version of the operating 
 version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be sufficient.
 * Docker.  Podman is an open source alternative, but it is not as good.
 * Github pro user account.  Students can have pro features by registering here: https://education.github.com/pack
-* Lastpass.  You will need a way to manage secrets securely.  While the free version should be adeduate, you should
-pay them so there is a simple exchange as to why they want to keep your passwords secure.
+* 1Password.  Not free, but you, your boss and your customers care about your security.
 * ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
 
 1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in a secure location (1Password, Apple Keychain, etc.).
@@ -61,9 +60,9 @@ pay them so there is a simple exchange as to why they want to keep your password
     docker run --rm hello-world # output should be Hello from Docker!...
     ```
 4. Configure GnuPG
-    1. If you already have a GnuPG account, download the tar file from Lastpass and extract it into your $HOME/.gnupg directory:
+    1. If you already have a GnuPG account, download the tar file from 1Password and extract it into your $HOME/.gnupg directory:
     ```bash
-    # assumes you have downloaded your encrypted gnupg file from lastpass to dot-gnupg-tar.enc
+    # assumes you have downloaded your encrypted gnupg file from 1Password to dot-gnupg-tar.enc
     # you will have to provide the password (saved in 1Password/keychain) to decrypt this
     openssl aes-256-cbc -a -d -pbkdf2 -in ~/downloads/gnupg-tgz.enc -out - | tar -C ~ zxvf -
     ```
@@ -73,12 +72,12 @@ pay them so there is a simple exchange as to why they want to keep your password
         gpg --full-gen-key
         ```
 	
-        2. Save your public key and encrypted backup to Lastpass 
+        2. Save your public key and encrypted backup to 1Password 
         ```bash
         gpg --armor --export <github email> > ~/downloads/gnupg-pubkey.asc
         tar zcf - .gnupg | openssl aes-256-cbc -a -salt  -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
         ```
-        Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to LastPass.
+        Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to 1Password.
 5. Make SSH keys if you have not already (no password - your drive is encrypted and its only for this laptop):
 ```bash
 test -f ~/.ssh/id_rsa || ssh-keygen
