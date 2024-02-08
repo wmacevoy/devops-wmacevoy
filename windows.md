@@ -10,7 +10,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 * 1Password.  Not free, but you, your boss and your customers care about your security.
 * ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
 
-1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in a secure location (1Password, Apple Keychain, etc.).
+1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in a secure location (1Password).
 2. Install WSL/Ubuntu LTS.  Use the app store to install the latest version of Ubuntu LTS.
     1. The installer should open up a console to create your ubuntu account.  Use a user name with no spaces.
     2. In the console run (this will download perhaps a gigabyte of data and take several minutes to run):
