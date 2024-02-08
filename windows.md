@@ -11,7 +11,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 pay them so there is a simple exchange as to why they want to keep your passwords secure.
 * ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
 
-1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in a secure location (1Password).
+1. Whole disk encrypt your drive.  Turn on bitlocker.  Save your recovery with print to pdf, save the pdf to your documents, then save the recovery keys as a record in a secure location (1Password, Apple Keychain, etc.).
 2. Install WSL/Ubuntu LTS.  Use the app store to install the latest version of Ubuntu LTS.
     1. The installer should open up a console to create your ubuntu account.  Use a user name with no spaces.
     2. In the console run (this will download perhaps a gigabyte of data and take several minutes to run):
@@ -64,7 +64,7 @@ pay them so there is a simple exchange as to why they want to keep your password
     1. If you already have a GnuPG account, download the tar file from Lastpass and extract it into your $HOME/.gnupg directory:
     ```bash
     # assumes you have downloaded your encrypted gnupg file from lastpass to dot-gnupg-tar.enc
-    # you will have to provide the password (saved in lastpass?) to decrypt this
+    # you will have to provide the password (saved in 1Password/keychain) to decrypt this
     openssl aes-256-cbc -a -d -pbkdf2 -in ~/downloads/gnupg-tgz.enc -out - | tar -C ~ zxvf -
     ```
     2. If you have never configured and saved your private keys

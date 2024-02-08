@@ -7,13 +7,13 @@ convenient.  It should be able to run a recent updated version of the operating 
 version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be sufficient.
 * Docker.  Podman is an open source alternative, but it is not as good.
 * Github pro user account.  Students can have pro features by registering here: https://education.github.com/pack
-* Lastpass.  You will need a way to manage secrets securely.  While the free version should be adeduate, you should
-pay them so there is a simple exchange as to why they want to keep your passwords secure.
-* ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
+* 1Password.  Not free, but you, your boss and your customers care about your security.
+
+* ChatGPT pro.  There is no comparable tool and the pro version is substantially better than he free version.
 * XCode.  Homebrew (next) uses xcode under the hood.
 * Homebrew. Open source package manager for MacOS.
 
-1. Whole disk encrypt your drive.  Turn on FileValt.  Save your recovery keys to lastpass.
+1. Whole disk encrypt your drive.  Turn on FileValt.  Save your recovery keys to 1Password.
 2. Install Homebrew.  Follow directions about installing XCode if needed.  In a terminal install basic tools
 ```bash
 brew install gnupg openssl git-crypt
@@ -29,8 +29,8 @@ brew install gnupg openssl git-crypt
 4. Configure GnuPG
     1. If you already have a GnuPG account, download the tar file from Lastpass and extract it into your $HOME/.gnupg directory:
     ```bash
-    # assumes you have downloaded your encrypted gnupg file from lastpass to dot-gnupg-tar.enc
-    # you will have to provide the password (saved in lastpass?) to decrypt this
+    # assumes you have downloaded your encrypted gnupg file from 1Password to dot-gnupg-tar.enc
+    # you will have to provide the password (saved in 1Password) to decrypt this
     openssl aes-256-cbc -a -d -pbkdf2 -in ~/downloads/gnupg-tgz.enc -out - | tar -C ~ zxvf -
     ```
     2. If you have never configured and saved your private keys
