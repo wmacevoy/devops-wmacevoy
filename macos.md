@@ -27,7 +27,7 @@ brew install gnupg openssl git-crypt
     docker run --rm hello-world
     ```
 4. Configure GnuPG
-    1. If you already have a GnuPG account, download the tar file from Lastpass and extract it into your $HOME/.gnupg directory:
+    1. If you already have a GnuPG account, download the tar file from 1Password and extract it into your $HOME/.gnupg directory:
     ```bash
     # assumes you have downloaded your encrypted gnupg file from 1Password to dot-gnupg-tar.enc
     # you will have to provide the password (saved in 1Password) to decrypt this
@@ -39,15 +39,15 @@ brew install gnupg openssl git-crypt
         gpg --full-gen-key
         ```
 	
-        2. Save your public key and encrypted backup to Lastpass 
+        2. Save your public key and encrypted backup to 1Password 
         ```bash
         gpg --armor --export <github email> > ~/downloads/gnupg-pubkey.asc
         tar zcf - .gnupg | openssl aes-256-cbc -a -salt  -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
         ```
-        Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to LastPass.
+        Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to 1Password.
 5. Make SSH keys if you have not already (no password - your drive is encrypted and its only for this laptop):
 ```bash
-test -f ~/.ssh/id_rsa || ssh-keygen
+test -f ~/.ssh/id_rsa || ssh-keygen -t rsa
 ```
 
 6. Export the SSH public key to Github.  You can copy the public key to the clipboard with
@@ -65,7 +65,7 @@ git config --global user.email johndoe@example.com
 cd # change to your WSL home directory
 mkdir projects
 cd projects
-git clone git@github.com:wmacevoy/devops-wmacevoy
+git clone git@github.com:wmacevoy/<course>-wmacevoy
 ```
 9. Run some tests
 ```bash
