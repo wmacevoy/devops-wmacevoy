@@ -94,13 +94,13 @@ Log into github, and in the hidden menu under your avatar, you can go to setting
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 ```
-8. Clone this repository.  You will have less trouble if you live in the WSL directory namespace:
+8. Clone <course> repository.
 ```bash
 mkdir -p ~/projects
 cd ~/projects
 git clone git@github.com:wmacevoy/<course>-wmacevoy
 ```
-9. Run some tests
+9. Run some tests (devops course only):
 ```bash
 cd ~/projects/devops-wmacevoy
 . ./ops

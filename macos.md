@@ -9,7 +9,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 * Github pro user account.  Students can have pro features by registering here: https://education.github.com/pack
 * 1Password.  Not free, but you, your boss and your customers care about your security.
 
-* ChatGPT pro.  There is no comparable tool and the pro version is substantially better than he free version.
+* ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
 * XCode.  Homebrew (next) uses xcode under the hood.
 * Homebrew. Open source package manager for MacOS.
 
@@ -60,14 +60,13 @@ Log into github, and in the hidden menu under your avatar, you can go to setting
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 ```
-8. Clone this repository.  You will have less trouble if you live in the WSL directory namespace:
+8. Clone <course> repository:
 ```bash
-cd # change to your WSL home directory
-mkdir projects
-cd projects
+mkdir -p ~/projects
+cd ~/projects
 git clone git@github.com:wmacevoy/<course>-wmacevoy
 ```
-9. Run some tests
+9. Run some tests (devops course only):
 ```bash
 cd ~/projects/devops-wmacevoy
 . ./ops
