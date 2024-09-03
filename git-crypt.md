@@ -18,7 +18,7 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
 
 1. **Generate GPG Keys:**
    - Alice and Bob should each generate a GPG key if they don't have one already.
-      ```
+      ```sh
       gpg --full-gen-key
       ```
       -- use defaults 
@@ -29,7 +29,7 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
 
 2. **Export Public Keys:**
    - Each developer should export their public key to a file.
-     ```
+     ```sh
      gpg --armor --export alice@example.com > alice-pubkey.asc
      gpg --armor --export bob@example.com > bob-pubkey.asc
      ```
@@ -40,7 +40,7 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
   
 2. **Initialize `git-crypt`:**
    - One developer (say, Alice) initializes `git-crypt` inside the repo.
-     ```
+     ```sh
      git-crypt init
      ```
 
@@ -53,13 +53,13 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
 
 4. **Create `.gitattributes`:**
    - Create a `.gitattributes` file in the root of the repository and add the following lines to encrypt everything in 'private' directories:
-     ```
+     ```sh
 **/private/** filter=git-crypt diff=git-crypt
      ```
   
 5. **Commit and Push:**
    - Commit the `.gitattributes` file and push it to the repository.
-     ```
+     ```sh
      git add .gitattributes
      git commit -m "Add git-crypt configuration."
      git push
