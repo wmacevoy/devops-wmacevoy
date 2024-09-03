@@ -29,11 +29,13 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
     # Symbolic link wsl ~/downloads folder to windows Downloads folder,
     # typically /home/<lin user>/downloads -> /mnt/c/Users/<win user>/Downloads
     ln -s "$(wslpath -u "$(powershell.exe -command "(New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path" | tr -d '\r\n')")" "$HOME/downloads"
-
+    ```
+    ```bash
     # Symbolic link wsl ~/winhome folder to windows user home,
     # typically, /home/<lin user>/winhome -> /mnt/c/Users/<win user>
     ln -s "$(wslpath -u "$(wslvar USERPROFILE)")" "$HOME/winhome"
-
+    ```
+    ```bash
     # Symbolic link wsl ~/documents folder to windows Documents folder
     # typically, /home/<lin user>/documents -> /mnt/c/Users/<win user>/documents
     ln -s "$(wslpath -u "$(powershell.exe -command "[Environment]::GetFolderPath('MyDocuments')" | tr -d '\r\n')")" "$HOME/documents"
