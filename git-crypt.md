@@ -53,7 +53,7 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
 
 4. **Create `.gitattributes`:**
    - Create a `.gitattributes` file in the root of the repository and add the following lines to encrypt everything in 'private' directories:
-     ```sh
+     ```plaintext
 **/private/** filter=git-crypt diff=git-crypt
      ```
   
