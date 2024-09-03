@@ -83,5 +83,3 @@ To encrypt everything in the `/api/config` folder using `git-crypt`, you'll need
 - [Git-crypt README](https://github.com/AGWA/git-crypt/blob/master/README.md)
 - [Gpg4win](https://gpg4win.org/)
 - [GPG Suite](https://gpgtools.org/)
-
-This process combines Git, cryptography, and cross-platform compatibility, which I think aligns well with your interest in computer science and cryptography. Would you like to know more about any specific part?
