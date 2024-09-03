@@ -46,14 +46,19 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
        with docker. In your WSL shell check with
    ```bash
     # check that This distrubution is the default distribution
-    wsl.exe --list
-    echo "You should see: $WSL_DISTRO_NAME (Default)"
+    wsl.exe -l -v
+    echo "You should see: * $WSL_DISTRO_NAME Running 2"
     ```
-    If you don't see your distribution as the default, set it with,
+    If you don't see your distribution as the default (*), set it with
     ```bash
     wsl.exe --set-default "$WSL_DISTRO_NAME"
     ```
-    I would restart docker and wsl if you have to set the default.  If it is the
+    If you don't see your distribution running version 2, set it with
+    ```bash
+    wsl.exe --set-version "$WSL_DISTRO_NAME" 2
+    ```
+    
+    I would restart docker and wsl if you have to set the default/version.  If it is the
     default, and you have started docker, then you should be able to run the
     docker command from within the container
     ```bash
