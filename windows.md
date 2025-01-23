@@ -88,12 +88,12 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
         Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to 1Password.
 5. Make SSH keys if you have not already (no password - your drive is encrypted and its only for this laptop):
 ```bash
-test -f ~/.ssh/ed25519 || ssh-keygen -t ed25519 -C "ohndoe@example.com"
+test -f ~/.ssh/id_ed25519 || ssh-keygen -t ed25519 -C "ohndoe@example.com"
 ```
 
 6. Export the SSH public key to Github.  You can copy the public key to the clipboard with
 ```bash
-cat ~/.ssh/ed25519.pub | clip.exe
+cat ~/.ssh/id_ed25519.pub | clip.exe
 ```
 Log into github, and in the hidden menu under your avatar, you can go to settings and "ssh/gpg keys" and paste in the new key.
 7. Configure `git`.  Use your real name and email you registered on GitHub:
