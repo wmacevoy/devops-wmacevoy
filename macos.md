@@ -19,8 +19,8 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 brew install gnupg openssl git-crypt
 ```
 3. Install Docker Desktop: https://www.docker.com
-    1. Do not "run as administrator" this seems to break things later.
-    2. Log in using the GUI - I had to reinstall once before this would work.
+    1. Log in using the GUI - I had to reinstall once before this would work.
+    2. Verify your email - docker breaks in subtle ways otherwise.
     3. Test that it works in a terminal:
     ```bash
     # test that docker is running - should produce a 'Hello from Docker!' kind of output

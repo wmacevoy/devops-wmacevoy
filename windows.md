@@ -43,8 +43,9 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 3. Install Docker Desktop: https://www.docker.com
     1. Do not "run as administrator" this seems to break things later.
     2. Log in using the GUI - I had to reinstall once before this would work.
-    3. In the Settings (gearbox) -> Resources make sure you have WSL 2 integration.
-    4. Check that your Ubuntu LTS is the default WSL distribution for integration
+    3. Verify your email - docker breaks in subtle ways otherwise.
+    4. In the Settings (gearbox) -> Resources make sure you have WSL 2 integration.
+    5. Check that your Ubuntu LTS is the default WSL distribution for integration
        with docker. In your WSL shell check with
    ```bash
     # check that This distrubution is the default distribution
