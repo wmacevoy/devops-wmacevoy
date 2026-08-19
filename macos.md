@@ -9,7 +9,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 * Github pro user account.  Students can have pro features by registering here: https://education.github.com/pack
 * 1Password.  Not free, but you, your boss and your customers care about your security.
 
-* ChatGPT pro.  There is no comparable tool and the pro version is substantially better than the free version.
+* Claude pro.  There is no comparable tool and the pro version is substantially better than the free version.
 * XCode.  Homebrew (next) uses xcode under the hood.
 * Homebrew. Open source package manager for MacOS.
 
