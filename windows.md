@@ -22,7 +22,19 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
     sudo apt-get upgrade -y
     
     # install basic dev tools
-    sudo apt-get install -y git git-crypt gnupg build-essential wslu
+    sudo apt-get install -y git git-crypt gnupg build-essential wslu curl
+
+    # install the github cli (gh) from github's own package repository
+    sudo mkdir -p -m 755 /etc/apt/keyrings
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+    sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo apt-get update && sudo apt-get install -y gh
+
+    # install claude code, the command line tool for your Claude Pro account
+    curl -fsSL https://claude.ai/install.sh | bash
     ```
     3. Link linux and windows users.  Create some useful symbolic links between your windows and linux user accounts.
     ```bash
@@ -48,7 +60,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
     5. Check that your Ubuntu LTS is the default WSL distribution for integration
        with docker. In your WSL shell check with
    ```bash
-    # check that This distrubution is the default distribution
+    # check that this distribution is the default distribution
     wsl.exe -l -v
     echo "You should see: * $WSL_DISTRO_NAME Running 2"
     ```
@@ -71,7 +83,7 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 4. Configure GnuPG
     1. If you already have a GnuPG account, download the tar file from 1Password and extract it into your $HOME/.gnupg directory:
     ```bash
-    # assumes you have downloaded your encrypted gnupg file from 1Password to dot-gnupg-tar.enc
+    # assumes you have downloaded your encrypted gnupg file from 1Password to ~/downloads/gnupg-tgz.enc
     # you will have to provide the password (saved in 1Password/keychain) to decrypt this
     openssl aes-256-cbc -a -d -pbkdf2 -in ~/downloads/gnupg-tgz.enc -out - | tar -C ~ zxvf -
     ```
@@ -84,12 +96,12 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
         2. Save your public key and encrypted backup to 1Password 
         ```bash
         gpg --armor --export <github email> > ~/downloads/gnupg-pubkey.asc
-        tar zcf - .gnupg | openssl aes-256-cbc -a -salt  -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
+        (cd ~ && tar zcf - .gnupg) | openssl aes-256-cbc -a -salt -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
         ```
         Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to 1Password.
 5. Make SSH keys if you have not already (no password - your drive is encrypted and its only for this laptop):
 ```bash
-test -f ~/.ssh/id_ed25519 || ssh-keygen -t ed25519 -C "ohndoe@example.com"
+test -f ~/.ssh/id_ed25519 || ssh-keygen -t ed25519 -C "johndoe@example.com"
 ```
 
 6. Export the SSH public key to Github.  You can copy the public key to the clipboard with
@@ -112,6 +124,13 @@ git clone git@github.com:wmacevoy/<course>-wmacevoy
 ```bash
 cd ~/projects/devops-wmacevoy
 . ./ops
-ops ops-test
-ops cloudbox-test
+ops doctor
+```
+`ops doctor` checks each piece of the setup above -- docker, git, your github ssh login, gpg, git-crypt,
+`gh` and `claude` -- and prints a pass/fail line for each.  Everything should say `[ ok ]` before you go on.
+
+If you want the deeper container checks as well:
+```bash
+ops test-ops           # the ops shell function, under bash/zsh/ksh
+ops cloudbox --test    # the cloud toolbox container (gcloud, firebase, aws, ssh)
 ```

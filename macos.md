@@ -13,10 +13,14 @@ version of Docker, with 8 GB of RAM 512 GB SSD disk space, and 4 cores should be
 * XCode.  Homebrew (next) uses xcode under the hood.
 * Homebrew. Open source package manager for MacOS.
 
-1. Whole disk encrypt your drive.  Turn on FileValt.  Save your recovery keys to 1Password.
+1. Whole disk encrypt your drive.  Turn on FileVault.  Save your recovery keys to 1Password.
 2. Install Homebrew.  Follow directions about installing XCode if needed.  In a terminal install basic tools
 ```bash
-brew install gnupg openssl git-crypt
+brew install gnupg openssl git-crypt gh
+```
+   Then install Claude Code, the command line tool for your Claude Pro account:
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
 ```
 3. Install Docker Desktop: https://www.docker.com
     1. Log in using the GUI - I had to reinstall once before this would work.
@@ -29,7 +33,7 @@ brew install gnupg openssl git-crypt
 4. Configure GnuPG
     1. If you already have a GnuPG account, download the tar file from 1Password and extract it into your $HOME/.gnupg directory:
     ```bash
-    # assumes you have downloaded your encrypted gnupg file from 1Password to dot-gnupg-tar.enc
+    # assumes you have downloaded your encrypted gnupg file from 1Password to ~/downloads/gnupg-tgz.enc
     # you will have to provide the password (saved in 1Password) to decrypt this
     openssl aes-256-cbc -a -d -pbkdf2 -in ~/downloads/gnupg-tgz.enc -out - | tar -C ~ zxvf -
     ```
@@ -42,9 +46,9 @@ brew install gnupg openssl git-crypt
         2. Save your public key and encrypted backup to 1Password 
         ```bash
         gpg --armor --export <github email> > ~/downloads/gnupg-pubkey.asc
-        tar zcf - .gnupg | openssl aes-256-cbc -a -salt  -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
+        (cd ~ && tar zcf - .gnupg) | openssl aes-256-cbc -a -salt -pbkdf2 -in - -out ~/downloads/gnupg-tgz.enc
         ```
-        Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your windows Downloads directory) to 1Password.
+        Upload the files created (gnupg-pubkey.asc and gnupg-tgz.enc in your ~/downloads folder) to 1Password.
 5. Make SSH keys if you have not already (no password - your drive is encrypted and its only for this laptop):
 ```bash
 test -f ~/.ssh/id_ed25519 || ssh-keygen -t ed25519 -C "johndoe@example.com"
@@ -70,6 +74,13 @@ git clone git@github.com:wmacevoy/<course>-wmacevoy
 ```bash
 cd ~/projects/devops-wmacevoy
 . ./ops
-ops ops-test
-ops cloudbox-test
+ops doctor
+```
+`ops doctor` checks each piece of the setup above -- docker, git, your github ssh login, gpg, git-crypt,
+`gh` and `claude` -- and prints a pass/fail line for each.  Everything should say `[ ok ]` before you go on.
+
+If you want the deeper container checks as well:
+```bash
+ops test-ops           # the ops shell function, under bash/zsh/ksh
+ops cloudbox --test    # the cloud toolbox container (gcloud, firebase, aws, ssh)
 ```

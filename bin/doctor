@@ -1,0 +1,177 @@
+#!/bin/bash
+#
+# ops doctor -- check that this laptop is set up for the course.
+#
+#   . ./ops
+#   ops doctor
+#
+# Every check prints one line.  Fix the [FAIL] lines before going on;
+# [warn] lines are things you can live without for a while.
+#
+
+pass=0
+warn=0
+fail=0
+
+say_ok()   { echo "[ ok ] $*"; pass=$((pass+1)); }
+say_warn() { echo "[warn] $*"; warn=$((warn+1)); }
+say_fail() { echo "[FAIL] $*"; fail=$((fail+1)); }
+
+have() { command -v "$1" > /dev/null 2>&1; }
+
+check_bash() {
+    if [ -z "$BASH_VERSION" ]; then
+	say_fail "not running under bash"
+	return
+    fi
+    if [ "${BASH_VERSINFO[0]}" -ge 4 ]; then
+	say_ok "bash $BASH_VERSION"
+	return
+    fi
+    local path_bash path_major
+    path_bash="$(command -v bash)"
+    path_major="$("$path_bash" -c 'echo ${BASH_VERSINFO[0]}' 2>/dev/null)"
+    if [ -n "$path_major" ] && [ "$path_major" -ge 4 ]; then
+	say_ok "bash $BASH_VERSION (/bin/bash), newer bash $path_major at $path_bash"
+    else
+	say_warn "bash $BASH_VERSION is the 2007 version macOS still ships -- 'brew install bash' is recommended"
+    fi
+}
+
+check_docker() {
+    if ! have docker; then
+	say_fail "docker not found -- install Docker Desktop (https://www.docker.com)"
+	return
+    fi
+    if docker run --rm hello-world 2>/dev/null | grep -q "Hello from Docker!"; then
+	say_ok "docker runs containers"
+    else
+	say_fail "docker is installed but 'docker run --rm hello-world' failed -- is Docker Desktop running?"
+    fi
+}
+
+check_git() {
+    if ! have git; then
+	say_fail "git not found"
+	return
+    fi
+    say_ok "git $(git --version | awk '{print $3}')"
+
+    local name email
+    name="$(git config --global user.name)"
+    email="$(git config --global user.email)"
+    if [ -n "$name" ]; then
+	say_ok "git user.name = $name"
+    else
+	say_fail "git user.name is unset -- git config --global user.name \"John Doe\""
+    fi
+    if [ -n "$email" ]; then
+	say_ok "git user.email = $email"
+    else
+	say_fail "git user.email is unset -- git config --global user.email johndoe@example.com"
+    fi
+}
+
+check_github_ssh() {
+    if ! have ssh; then
+	say_fail "ssh not found"
+	return
+    fi
+    local out who
+    out="$(ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
+	       -T git@github.com 2>&1)"
+    if echo "$out" | grep -q "successfully authenticated"; then
+	who="$(echo "$out" | sed -n 's/^Hi \([^!]*\)!.*/\1/p')"
+	say_ok "github ssh login works (as ${who:-unknown})"
+    else
+	say_fail "github ssh login failed -- add ~/.ssh/id_ed25519.pub to github ('gh auth login' can do it)"
+    fi
+}
+
+check_gpg() {
+    if ! have gpg; then
+	say_fail "gpg not found -- needed by git-crypt"
+	return
+    fi
+    if gpg --list-secret-keys 2>/dev/null | grep -q .; then
+	say_ok "gpg secret key present"
+    else
+	say_fail "no gpg secret key -- run 'gpg --full-gen-key'"
+    fi
+}
+
+check_git_crypt() {
+    if have git-crypt; then
+	say_ok "git-crypt $(git-crypt --version 2>&1 | head -1 | awk '{print $2}')"
+    else
+	say_fail "git-crypt not found"
+    fi
+}
+
+check_gh() {
+    if ! have gh; then
+	say_fail "gh (github cli) not found"
+	return
+    fi
+    if gh auth status > /dev/null 2>&1; then
+	say_ok "gh is logged in"
+    else
+	say_warn "gh is installed but not logged in -- run 'gh auth login'"
+    fi
+}
+
+check_claude() {
+    if have claude; then
+	say_ok "claude code $(claude --version 2>/dev/null | head -1)"
+    else
+	say_warn "claude code not found -- see the install step in macos.md / windows.md"
+    fi
+}
+
+check_repo() {
+    local dir
+    dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    say_ok "repo is $dir"
+
+    local total=0 locked=0 f
+    for f in "$dir"/*/api/private/*.env "$dir"/my_notes_app/.env.*; do
+	[ -r "$f" ] || continue
+	total=$((total+1))
+	if head -c 10 "$f" | grep -qa GITCRYPT; then
+	    locked=$((locked+1))
+	fi
+    done
+
+    if [ $total -eq 0 ]; then
+	say_warn "found no git-crypt protected files -- is this the right repo?"
+    elif [ $locked -eq 0 ]; then
+	say_ok "git-crypt is unlocked ($total secret files readable)"
+    else
+	say_warn "git-crypt is locked ($locked of $total secret files still encrypted) -- run 'git-crypt unlock'"
+    fi
+}
+
+doctor() {
+    check_bash
+    check_docker
+    check_git
+    check_github_ssh
+    check_gpg
+    check_git_crypt
+    check_gh
+    check_claude
+    check_repo
+
+    echo
+    echo "$pass ok, $warn warning(s), $fail failure(s)"
+    if [ $fail -eq 0 ]; then
+	echo "you are ready to go."
+    else
+	echo "fix the [FAIL] lines above, then run 'ops doctor' again."
+    fi
+    test $fail -eq 0
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    doctor "$@"
+fi
