@@ -36,7 +36,7 @@ then
     tag="${tag// /_}"
 fi
 
-if [ "$docerfile" = "" ]
+if [ "$dockerfile" = "" ]
 then
     dockerfile="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)/Dockerfile.$extension"
 fi
